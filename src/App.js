@@ -3,7 +3,7 @@ import './App.css';
 import Main from './pages/main';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import { Navbar } from 'react-bootstrap';
+import { Nav, Navbar } from 'react-bootstrap';
 
 class App extends Component {
 
@@ -16,7 +16,10 @@ class App extends Component {
           <Navbar.Brand href="/home">AppName</Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
-
+          
+          <Nav className="mr-auto">
+            <Nav.Link href="/profile">Edit Profile</Nav.Link>
+          </Nav>
           </Navbar.Collapse>
 
         </Navbar>
