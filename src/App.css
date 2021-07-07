@@ -1,38 +1,351 @@
 .App {
-  text-align: center;
+    text-align: center;
 }
 
 .App-logo {
-  height: 40vmin;
-  pointer-events: none;
+    height: 40vmin;
+    pointer-events: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+    .App-logo {
+        animation: App-logo-spin infinite 20s linear;
+    }
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+    background-color: #282c34;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
 }
 
 .App-link {
-  color: #61dafb;
+    color: #61dafb;
 }
 
 @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* NEW */
+
+
+/* * {
+box-sizing: border-box;
+}
+
+.column {
+float: left;
+padding: 25px;
+
+
+}
+.left {
+width: 40%;
+}
+.right {
+width: 60%;
+}
+*/
+
+.color-nav {
+    background-color: rgb(51, 51, 51);
+}
+
+#nav-dropdown {
+    color: white;
+    font-weight: bold;
+    background-color: red;
+}
+
+body {
+    font-family: -apple-system, Helvetica Neue, Lucida Grande;
+}
+
+.nav_ul {
+    list-style-type: none;
+}
+
+.card {
+    background-color: lightgray;
+    padding-top: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 5px;
+}
+
+.sidenav {
+    height: 100%;
+    width: 210px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    padding-top: 20px;
+}
+
+.sidenav a {
+    padding: 6px 8px 6px 16px;
+    /* top, right, bottom, and left */
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+}
+
+.sidenav button {
+    padding: 6px 8px 6px 16px;
+    /* top, right, bottom, and left */
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    background-color: #111;
+    border-color: #111;
+    display: block;
+}
+
+.a image:visited {
+    color: black;
+}
+
+a:link,
+a:visited,
+a:hover,
+a:active {
+    color: rgb(191, 15, 15)
+}
+
+.sidenav a:hover {
+    color: #f1f1f1;
+}
+
+.main {
+    /* Same as the width of the sidenav */
+    font-family: "Helvetica Neue";
+    margin: auto;
+    padding-left: 25px;
+    padding-right: 25px;
+    padding-top: 25px;
+    padding-bottom: 25px;
+}
+
+.indent {
+    padding-top: 25px;
+    padding-bottom: 25px;
+}
+
+.mainTest {
+    width: "100%";
+    border-radius: "50%";
+}
+
+@media screen and (max-width: 1100px) {
+    .main {
+        padding-left: 10px;
+        padding-right: 10px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+}
+
+.mainCenter {
+    /* Same as the width of the sidenav */
+    font-family: "Helvetica Neue";
+    text-align: justify;
+    padding-left: 16px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    padding-top: 35px;
+}
+
+.main a {
+    color: #466991;
+}
+
+.blogs {
+    /* Same as the width of the sidenav */
+    font-family: "Helvetica Neue";
+    padding-left: 52px;
+    padding-right: 52px;
+    padding-top: 22px;
+    padding-bottom: 10px;
+}
+
+.main h1 {
+    font-family: "Helvetica Neue";
+}
+
+.blogs h1 {
+    font-family: "Helvetica Neue";
+}
+
+.main h2 {
+    font-family: "Helvetica Neue";
+}
+
+.blogs h2 {
+    font-family: "Helvetica Neue";
+}
+
+.main h3 {
+    font-family: "Helvetica Neue";
+}
+
+.blogs h3 {
+    font-family: "Helvetica Neue";
+}
+
+.main h4 {
+    font-family: "Helvetica Neue";
+}
+
+.blogs h4 {
+    font-family: "Helvetica Neue";
+}
+
+.main p {
+    font-size: large;
+    font-family: "Helvetica Neue";
+}
+
+.blogs p {
+    font-size: large;
+    font-family: "Helvetica Neue";
+}
+
+.favorites_li {
+    margin: 15px 0;
+}
+
+@media screen and (max-height: 450px) {
+    .sidenav {
+        padding-top: 15px;
+    }
+    .sidenav a {
+        font-size: 18px;
+    }
+}
+
+.tab {
+    padding-left: 30px;
+}
+
+.card-bar {
+    /* width: 160px;
+height: 325px; */
+    /* width: 100px;
+height: 100px; */
+    float: left;
+    /* padding-top: 5px;
+padding-bottom: 5px;
+padding-left: 5px;
+padding-right: 5px; */
+}
+
+.card-gallery {
+    float: left;
+    padding: 5px;
+    /* padding-top: 10px;
+padding-bottom: 10px;
+padding-left: 10px;
+padding-right: 10px;
+*/
+}
+
+.bar {
+    width: 160px;
+    height: 325px;
+    /* width: 100px;
+height: 100px; */
+    float: left;
+    /* 
+padding-top: 5px;
+padding-bottom: 5px; */
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.barbooks {
+    width: 160px;
+    height: 325px;
+    float: left;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 15px;
+}
+
+.barpod {
+    height: 275px;
+    /* width: 100px;
+height: 100px; */
+    float: left;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.floatLeft {
+    clear: both;
+    float: left;
+}
+
+.subscribeButton {
+    margin-top: 15px;
+    background-color: rgb(255, 124, 123);
+    border: none;
+    color: white;
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bolder;
+    font-family: "Helvetica Neue", Gadget, sans-serif;
+}
+
+.subscribeCard {
+    background-color: rgb(126, 126, 126);
+    border: none;
+    color: white;
+    padding: 10px;
+    text-align: left;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: "Helvetica Neue", Gadget, sans-serif;
+    margin-bottom: 15px;
+}
+
+.rounded {
+    color: black;
+    border-color: black;
+    border-width: 1px;
+    padding: 3px;
+    text-align: left;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 8px;
+    font-size: 13px;
+    margin: 2px 2px;
+}
+
+.subscribe {
+    width: 100%;
 }
