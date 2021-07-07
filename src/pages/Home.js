@@ -3,6 +3,7 @@ import '../App.css';
 
 import { Card } from 'react-mdl';
 
+import { Auth } from 'aws-amplify';
 
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -27,12 +28,24 @@ class Home extends Component {
     this.setState({ windowWidth: window.innerWidth });
   }
 
+  async getCurrentUserEmail() {
+    var user = await Auth.currentAuthenticatedUser();
+    return user.attributes.email;
+  }
+
   componentDidMount() {
     window.addEventListener("resize", this.handleResize);
     var currentComponent = this;
 
-    var unirest = require("unirest");
-    unirest.get("https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=k30d3904r90")
+    this.getCurrentUserEmail().then((response) => {
+        console.log("jared");
+
+        console.log(JSON.stringify(response));
+
+
+
+        var unirest = require("unirest");
+    unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${response}`)
       .header('Accept', 'application/json')
     //   .send(JSON.stringify(objToSending))
       .end(function (res) {
@@ -54,7 +67,7 @@ class Home extends Component {
       });
 
 
-      unirest.get("https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=k30d3904r90")
+      unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${response}`)
       .header('Accept', 'application/json')
     //   .send(JSON.stringify(objToSending))
       .end(function (res) {
@@ -75,6 +88,11 @@ class Home extends Component {
         return
       });
 
+
+
+
+    });
+    
   }
 
   componentWillUnmount() {
