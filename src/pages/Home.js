@@ -4,6 +4,7 @@ import '../App.css';
 import { Card } from 'react-mdl';
 
 import { Auth } from 'aws-amplify';
+import { getNiceTime } from '../helpers/TimeHelper';
 
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -22,6 +23,7 @@ class Home extends Component {
     this.handleResize = this.handleResize.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
 
+    this.renderMatchesForRace = this.renderMatchesForRace.bind(this);
   }
 
   handleResize(e) {
@@ -53,9 +55,6 @@ class Home extends Component {
         currentComponent.setState({
           runner: runnerBody
         });
-
-        /*
-        {"location":"Seattle, WA","runnerid":"k30d3904r90","name":"jared","coordinates":"230293489230.342232423","gender":0,"birthday":"04-25-1996"} */
         if (res.error) {
           alert("Your subscription request failed, please try again later.");
           return
@@ -76,8 +75,27 @@ class Home extends Component {
           times: timesBody
         });
 
-        /*
-        {"location":"Seattle, WA","runnerid":"k30d3904r90","name":"jared","coordinates":"230293489230.342232423","gender":0,"birthday":"04-25-1996"} */
+        if (res.error) {
+          alert("Your subscription request failed, please try again later.");
+          return
+        }
+        console.log(res.raw_body);
+
+        // alert(JSON.stringify(currentComponent.state.runner));
+        return
+      });
+
+
+      unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/matches?runnerid=${response}`)
+      .header('Accept', 'application/json')
+    //   .send(JSON.stringify(objToSending))
+      .end(function (res) {
+          const matches = JSON.parse(res.raw_body);
+        console.log("matches: " + JSON.stringify(matches));
+          currentComponent.setState({
+          matches: matches
+        });
+
         if (res.error) {
           alert("Your subscription request failed, please try again later.");
           return
@@ -104,7 +122,7 @@ class Home extends Component {
       for (const time of this.state.times) {
           if (time.race === race) {
               rows.push(
-                <li>{time.date} - {time.time} - </li>
+                <li>{time.date} - {getNiceTime(time.time)} - </li>
 
               );
           }
@@ -120,14 +138,13 @@ class Home extends Component {
                 <Card shadow={0} style={cardStyle}>
 
                 <img src={TstProfilePic} alt="Illinois Matahon 2018" style={{ maxWidth: "300px" }} border="5" />
-                <h4><b>{this.state.runner.name}</b></h4>
+                <h4><b>Name:</b> {this.state.runner.firstname}</h4>
 
-                <h5><b>{this.state.runner.location}</b></h5>
+                <h5><b>location:</b> {this.state.runner.location}</h5>
 
-                <h5><b>{this.state.runner.birthday}</b></h5>
+                <h5><b>birthday:</b> {this.state.runner.birthday}</h5>
 
-
-                <h5><b>{this.state.runner.gender === 0 ? "Man" : "Woman"}</b></h5>
+                <h5><b>gender:</b> {this.state.runner.gender ? (this.state.runner.gender === 1 ? "Woman" : "Man") : <></> }</h5>
 
                 <h5><b>5k Times</b></h5>
                 <ul>
@@ -163,6 +180,41 @@ class Home extends Component {
   }
 
 
+  renderMatchesForRace(race) {
+    const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
+
+    if (this.state.matches) {
+      console.log("ate.matches" + JSON.stringify(this.state.matches));
+      console.log("race " + race);
+
+      let matchesForRace = [];
+      for(const match of this.state.matches[race]) {
+        matchesForRace.push(
+
+        <Card shadow={0} style={cardStyle}>
+  
+          <h5>Runner: {match.runnerid}</h5>
+
+          <h5>time: {match.time}</h5>
+          <h5>location: TOBEADDED</h5>
+
+          <h5>date: {match.date}</h5>
+
+          <h5>link: {match.link}</h5>
+        </Card>
+        );
+      }
+      return (matchesForRace);
+    } else {
+
+      return (
+        <Card shadow={0} style={cardStyle}>
+  
+        </Card>
+      );
+    }
+    
+  }
   render() {
     const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
 
@@ -188,9 +240,7 @@ class Home extends Component {
               <h3><b>Matches</b></h3>
 
                 <h5><b>5k Matches</b></h5>
-                <Card shadow={0} style={cardStyle}></Card>
-
-                <Card shadow={0} style={cardStyle}></Card>
+                {this.renderMatchesForRace('fivek')}
 
                 <h5><b>10K Matches</b></h5>
                 <Card shadow={0} style={cardStyle}></Card>

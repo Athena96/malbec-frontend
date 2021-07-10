@@ -6,7 +6,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Nav, Navbar } from 'react-bootstrap';
 import { withAuthenticator } from '@aws-amplify/ui-react'
 import { Auth } from 'aws-amplify';
-import { AmplifySignOut } from '@aws-amplify/ui-react';
 import { Hub } from 'aws-amplify';
 
 const listener = (data) => {
@@ -34,8 +33,6 @@ const listener = (data) => {
             console.log('here...');
               console.log(JSON.stringify(res));
     
-            /*
-            {"location":"Seattle, WA","runnerid":"k30d3904r90","name":"jared","coordinates":"230293489230.342232423","gender":0,"birthday":"04-25-1996"} */
             if (res.error) {
               alert("Your subscription request failed, please try again later.");
               return
@@ -106,9 +103,10 @@ class App extends Component {
           <Navbar.Collapse id="responsive-navbar-nav">
           
           <Nav className="mr-auto">
-            <Nav.Link href="/profile">Edit Profile</Nav.Link>
+            <Nav.Link href="/update/profile">Edit Profile</Nav.Link>
+            <Nav.Link href="/times">Edit Race Times</Nav.Link>
+
             <Nav.Link onClick={this.signOut}><b>Sign Out</b></Nav.Link>
-            {/* <AmplifySignOut buttonText="Sign Out"></AmplifySignOut> */}
 
           </Nav>
           </Navbar.Collapse>

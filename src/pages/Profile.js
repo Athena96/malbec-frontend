@@ -1,79 +1,125 @@
 import React, { Component } from 'react';
 import '../App.css';
 
-import { Card } from 'react-mdl';
+import { Card, Button } from 'react-mdl';
+import { Auth } from 'aws-amplify';
 
+import { Link } from "react-router-dom";
 
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
 import TstProfilePic from "../static/images/beach-bum.png"
+var IS_UPDATE = false;
 
-class Home extends Component {
+class Profile extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { 
-        windowWidth: window.innerWidth,
-        runner: null,
-        times: null
+    this.state = {
+      windowWidth: window.innerWidth,
+      runnerLoading: true,
+      timesLoading: true,
     };
+
+    IS_UPDATE = props.history.location.pathname.split('/')[1] === "update";
+
     this.handleResize = this.handleResize.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.save = this.save.bind(this);
 
   }
-
+  async getCurrentUserEmail() {
+    var user = await Auth.currentAuthenticatedUser();
+    return user.attributes.email;
+  }
   handleResize(e) {
     this.setState({ windowWidth: window.innerWidth });
+  }
+
+
+  handleChange(event) {
+    var target = event.target;
+    var value = target.type === 'checkbox' ? target.checked : target.value;
+    var name = target.name;
+
+    console.log("name; " + name);
+    console.log("value; " + value);
+
+    if (name === "gender") {
+      value = parseInt(value);
+    }
+    this.setState({
+      [name]: value
+    });
   }
 
   componentDidMount() {
     window.addEventListener("resize", this.handleResize);
     var currentComponent = this;
 
-    var unirest = require("unirest");
-    unirest.get("https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=k30d3904r90")
-      .header('Accept', 'application/json')
-    //   .send(JSON.stringify(objToSending))
-      .end(function (res) {
-          const runnerBody = JSON.parse(res.raw_body);
-        currentComponent.setState({
-          runner: runnerBody
-        });
+    this.getCurrentUserEmail().then((response) => {
+      if (IS_UPDATE) {
 
-        /*
-        {"location":"Seattle, WA","runnerid":"k30d3904r90","name":"jared","coordinates":"230293489230.342232423","gender":0,"birthday":"04-25-1996"} */
-        if (res.error) {
-          alert("Your subscription request failed, please try again later.");
-          return
-        }
-        console.log(res.raw_body);
+        var unirest = require("unirest");
+        console.log("refetch///");
+        unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${response}`)
+          .header('Accept', 'application/json')
+          .end(function (res) {
+            console.log(res.raw_body);
 
-        // alert(JSON.stringify(currentComponent.state.runner));
-        return
-      });
+            const runnerBody = JSON.parse(res.raw_body);
+
+            currentComponent.setState({
+              firstname: runnerBody.firstname,
+              location: runnerBody.location,
+              runnerid: runnerBody.runnerid,
+              coordinates: runnerBody.coordinates,
+              gender: runnerBody.gender,
+              birthday: runnerBody.birthday,
+              phone: runnerBody.phone,
+              email: runnerBody.email,
+              runnerLoading: false
+            });
+            if (res.error) {
+              alert("Your subscription request failed, please try again later.");
+              return
+            }
+
+            // alert(JSON.stringify(currentComponent.state));
+            return
+          });
 
 
-      unirest.get("https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=k30d3904r90")
-      .header('Accept', 'application/json')
-    //   .send(JSON.stringify(objToSending))
-      .end(function (res) {
-          const timesBody = JSON.parse(res.raw_body);
-        currentComponent.setState({
-          times: timesBody
-        });
+        unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${response}`)
+          .header('Accept', 'application/json')
+          //   .send(JSON.stringify(objToSending))
+          .end(function (res) {
+            console.log(res.raw_body);
 
-        /*
-        {"location":"Seattle, WA","runnerid":"k30d3904r90","name":"jared","coordinates":"230293489230.342232423","gender":0,"birthday":"04-25-1996"} */
-        if (res.error) {
-          alert("Your subscription request failed, please try again later.");
-          return
-        }
-        console.log(res.raw_body);
+            const timesBody = JSON.parse(res.raw_body);
+            console.log(timesBody);
+            currentComponent.setState({
+              times: timesBody,
+              timesLoading: false
 
-        // alert(JSON.stringify(currentComponent.state.runner));
-        return
-      });
+            });
+
+            if (res.error) {
+              alert("Your subscription request failed, please try again later.");
+              return
+            }
+            console.log(res.raw_body);
+
+            // alert(JSON.stringify(currentComponent.state));
+            return
+          });
+
+      }
+
+    });
+
 
   }
 
@@ -82,81 +128,182 @@ class Home extends Component {
   }
 
   getRaceTimes(race) {
-      const rows = [];
-      for (const time of this.state.times) {
-          if (time.race === race) {
-              rows.push(
-                <li>{time.date} - {time.time} - </li>
+    const rows = [];
+    for (const time of this.state.times) {
+      if (time.race === race) {
+        rows.push(
+          <li><Link to="/times"> (click to edit race times) {time.date} - {time.time}</Link></li>
 
-              );
-          }
+        );
       }
-      return rows;
+    }
+    return rows.length > 0 ? rows : null;
   }
+
+
+
+  save() {
+    console.log("save");
+
+    const runner = {
+      "location": this.state.location,
+      "firstname": this.state.firstname,
+      "runnerid": this.state.runnerid,
+      "email": this.state.email,
+      "phone": this.state.phone,
+      "gender": this.state.gender,
+      "coordinates": this.state.coordinates,
+      "birthday": this.state.birthday
+    }
+
+
+    var unirest = require("unirest");
+    unirest.put(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners`)
+      .header('Accept', 'application/json')
+      .send(JSON.stringify(runner))
+      .end(function (res) {
+
+
+        if (res.error) {
+          alert("Your subscription request failed, please try again later.");
+          return
+        }
+
+        alert("Saved your runner profile!");
+
+        console.log(res.raw_body);
+        return
+      });
+
+  }
+
 
   renderUserProfile() {
     const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
 
-      if (this.state.runner && this.state.times) {
-          return (
-                <Card shadow={0} style={cardStyle}>
+    if (this.state && !this.state.runnerLoading && !this.state.timesLoading) {
+      console.log(JSON.stringify(this.state));
+      return (
+        <Card shadow={0} style={cardStyle}>
 
-                <img src={TstProfilePic} alt="Illinois Matahon 2018" style={{ maxWidth: "300px" }} border="5" />
-                <h4><b>{this.state.runner.name}</b></h4>
+          <img src={TstProfilePic} alt="Illinois Matahon 2018" style={{ maxWidth: "300px" }} border="5" />
+          <label>
+            <b>Name:</b><br />
+            <input
+              className="rounded"
+              name="firstname"
+              type="text"
+              value={this.state.firstname}
+              onChange={this.handleChange} />
+          </label><br />
+          <label>
+            <b>Location:</b><br />
+            <input
+              className="rounded"
+              name="location"
+              type="text"
+              value={this.state.location}
+              onChange={this.handleChange} />
+          </label><br />
 
-                <h5><b>{this.state.runner.location}</b></h5>
 
-                <h5><b>{this.state.runner.birthday}</b></h5>
+          <label>
+            <b>Birthday:</b><br />
+            <input
+              className="rounded"
+              name="birthday"
+              type="date"
+              value={this.state.birthday}
+              onChange={this.handleChange} />
+          </label><br />
+
+          <b>Gender:</b>
+          <div className="radio">
+            <label>
+              <input type="radio" name='gender' value={1}
+                checked={this.state.gender === 1}
+                onChange={this.handleChange} />
+              Woman
+            </label>
+          </div>
+          <div className="radio">
+            <label>
+              <input type="radio" name='gender' value={2}
+                checked={this.state.gender === 2}
+                onChange={this.handleChange} />
+              Man
+            </label>
+          </div>
 
 
-                <h5><b>{this.state.runner.gender === 0 ? "Man" : "Woman"}</b></h5>
-
-                <h5><b>5k Times</b></h5>
-                <ul>
-                    {this.getRaceTimes('fivek')}
-                </ul>
+          <h5><b>5k Times</b></h5>
+          <ul>
+            {this.getRaceTimes('fivek') ? this.getRaceTimes('fivek') : <Link to="/times">Click to add race times</Link>}
+          </ul>
 
 
-                <h5><b>10K Times</b></h5>
-                <ul>
-                    {this.getRaceTimes('tenk')}
-                </ul>
+          <h5><b>10K Times</b></h5>
+          <ul>
+          {this.getRaceTimes('tenk') ? this.getRaceTimes('tenk') : <Link to="/times">Click to add race times</Link>}
+          </ul>
 
 
-                <h5><b>1/2 Marathon Times</b></h5>
-                <ul>
-                    {this.getRaceTimes('halfmarathon')}
-                </ul>
+          <h5><b>1/2 Marathon Times</b></h5>
+          <ul>
 
-                <h5><b> Marathon Times</b></h5>
-                <ul>
-                    {this.getRaceTimes('marathon')}
-                </ul>
+          {this.getRaceTimes('halfmarathon') ? this.getRaceTimes('halfmarathon') : <Link to="/times">Click to add race times</Link>}
 
-                <h5><b> Contact Info</b></h5>
-                <ul>
-                    <li>phone number: {this.state.runner.phone}</li>
+          </ul>
 
-                    <li>email: {this.state.runner.email}</li>
-                </ul>
-                </Card>
-          )
-      }
+          <h5><b> Marathon Times</b></h5>
+          <ul>
+          {this.getRaceTimes('marathon') ? this.getRaceTimes('marathon') : <Link to="/times">Click to add race times</Link>}
+          </ul>
+
+          <h5><b> Contact Info</b></h5>
+          <ul>
+
+            <label>
+              <b>Phone Number:</b><br />
+              <input
+                className="rounded"
+                name="phone"
+                type="phone"
+                value={this.state.phone}
+                onChange={this.handleChange} />
+            </label><br />
+
+            <label>
+              <b>Email:</b><br />
+              <input
+                className="rounded"
+                name="phone"
+                type="phone"
+                value={this.state.email}
+                onChange={this.handleChange} />
+            </label><br />
+
+          </ul>
+
+          <Button style={{ background: 'grey' }} onClick={this.save}>Save</Button>
+
+        </Card>
+      )
+    }
   }
 
 
   render() {
 
-   return (
+    return (
 
-    <div>
+      <div>
         {this.renderUserProfile()}
+      </div>
 
-    </div>
-
-   );
+    );
 
   }
 }
 
-export default Home;
+export default Profile;
