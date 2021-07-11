@@ -2,14 +2,13 @@ import React, { Component } from 'react';
 import '../App.css';
 
 import { Card, Button } from 'react-mdl';
-import { Auth } from 'aws-amplify';
+import { Auth, Storage } from 'aws-amplify';
 
 import { Link } from "react-router-dom";
 
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
-import TstProfilePic from "../static/images/beach-bum.png"
 var IS_UPDATE = false;
 
 class Profile extends Component {
@@ -28,7 +27,7 @@ class Profile extends Component {
     this.componentDidMount = this.componentDidMount.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.save = this.save.bind(this);
-
+    this.imageUpdload = this.imageUpdload.bind(this);
   }
   async getCurrentUserEmail() {
     var user = await Auth.currentAuthenticatedUser();
@@ -61,6 +60,20 @@ class Profile extends Component {
 
     this.getCurrentUserEmail().then((response) => {
       if (IS_UPDATE) {
+
+        Storage.list(`${response}/`) // for listing ALL files without prefix, pass '' instead
+    .then(async result => {
+
+      console.log('result.key' + JSON.stringify(result))
+
+      const signedURL = await Storage.get(result[0].key); // get key from Storage.list
+
+      console.log('signedURL: ' + signedURL);
+      currentComponent.setState({
+        profileImage: signedURL
+      });
+    })
+    .catch(err => console.log(err));
 
         var unirest = require("unirest");
         console.log("refetch///");
@@ -153,7 +166,8 @@ class Profile extends Component {
       "phone": this.state.phone,
       "gender": this.state.gender,
       "coordinates": this.state.coordinates,
-      "birthday": this.state.birthday
+      "birthday": this.state.birthday,
+      "profilepic": this.state.profileImage
     }
 
 
@@ -177,16 +191,60 @@ class Profile extends Component {
 
   }
 
+  imageUpdload = async function (e) {
+    const file = e.target.files[0];
+    console.log('file: ' + JSON.stringify(file));
+
+    // delete whats in user/*
+
+
+    // then put
+
+    try {
+
+      Storage.list(this.state.runnerid + '/') // for listing ALL files without prefix, pass '' instead
+    .then( async result => {
+      console.log(result);
+      for (const f of result) {
+        console.log('deleting: ' + f.key);
+        await Storage.remove(f.key);
+      }
+    })
+    .catch(err => console.log(err));
+
+
+      await Storage.put(this.state.runnerid + '/' + file.name, file, {
+        contentType: 'image/png' // contentType is optional
+      });
+
+      const signedurl = await Storage.get(this.state.runnerid + '/' + file.name); // get key from Storage.list
+
+
+      this.setState({
+        profileImage: signedurl
+      });
+
+      this.save();
+
+    } catch (error) {
+      console.log('Error uploading file: ', error);
+    }  
+  }
 
   renderUserProfile() {
     const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
 
     if (this.state && !this.state.runnerLoading && !this.state.timesLoading) {
-      console.log(JSON.stringify(this.state));
+      console.log('this.state.profileImage: ' + this.state.profileImage);
       return (
         <Card shadow={0} style={cardStyle}>
 
-          <img src={TstProfilePic} alt="Illinois Matahon 2018" style={{ maxWidth: "300px" }} border="5" />
+          <img src={this.state.profileImage} alt="Illinois Matahon 2018" style={{ maxWidth: "300px" }} border="5" />
+          <input
+          type="file"
+          onChange={this.imageUpdload}
+          />
+
           <label>
             <b>Name:</b><br />
             <input

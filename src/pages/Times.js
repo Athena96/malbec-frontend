@@ -14,7 +14,6 @@ import { Auth } from 'aws-amplify';
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
-import TstProfilePic from "../static/images/beach-bum.png"
 var IS_UPDATE = false;
 
 class Times extends Component {
@@ -71,8 +70,35 @@ class Times extends Component {
         var currentComponent = this;
 
         this.getCurrentUserEmail().then((response) => {
-
             var unirest = require("unirest");
+
+            unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${response}`)
+            .header('Accept', 'application/json')
+            .end(function (res) {
+              console.log(res.raw_body);
+  
+              const runnerBody = JSON.parse(res.raw_body);
+  
+              currentComponent.setState({
+                firstname: runnerBody.firstname,
+                location: runnerBody.location,
+                runnerid: runnerBody.runnerid,
+                coordinates: runnerBody.coordinates,
+                gender: runnerBody.gender,
+                birthday: runnerBody.birthday,
+                phone: runnerBody.phone,
+                email: runnerBody.email,
+                runnerLoading: false
+              });
+              if (res.error) {
+                alert("Your subscription request failed, please try again later.");
+                return
+              }
+  
+              // alert(JSON.stringify(currentComponent.state));
+              return
+            });
+
             unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${response}`)
                 .header('Accept', 'application/json')
                 .end(function (res) {
@@ -165,6 +191,7 @@ class Times extends Component {
         const time = {
             "link": this.state[raceType].link,
             "race": raceType,
+            "location": this.state.location,
             "date": this.state[raceType].date,
             "runnerid": this.state.runnerid,
             "time": Number(this.state[raceType].time)
