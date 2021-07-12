@@ -3,7 +3,7 @@ import '../App.css';
 
 import { Card, Button } from 'react-mdl';
 
-import { Auth } from 'aws-amplify';
+import { Auth, Storage } from 'aws-amplify';
 import { getNiceTime } from '../helpers/TimeHelper';
 
 import Row from 'react-bootstrap/Row'
@@ -41,7 +41,27 @@ class Home extends Component {
     
     this.getCurrentUserEmail().then((response) => {
       
+
+
+      Storage.list(`${response}/`) // for listing ALL files without prefix, pass '' instead
+      .then(async result => {
+  
+        console.log('result.key' + JSON.stringify(result))
+  
+        const signedURL = await Storage.get("public/"+result[0].key); // get key from Storage.list
+  
+        console.log('signedURL: ' + signedURL);
+        currentComponent.setState({
+          myprofile: {
+            profileImage: signedURL
+          }
+        });
+      });
+
+
+
       this.setState({user: response});
+
       var unirest = require("unirest");
       unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${response}`)
       .header('Accept', 'application/json')
@@ -132,7 +152,7 @@ class Home extends Component {
                 <Card shadow={0} style={cardStyle}>
 
 
-                <img src={this.state[profileToLoad].profilepic} alt="Illinois Matahon 2018" style={{ maxWidth: "300px" }} border="5" />
+                <img src={this.state[profileToLoad].profileImage} alt="Illinois Matahon 2018" style={{ maxWidth: "300px" }} border="5" />
                 <h4><b>Name:</b> {this.state[profileToLoad].firstname}</h4>
 
                 <h5><b>location:</b> {this.state[profileToLoad].location}</h5>
@@ -180,22 +200,46 @@ class Home extends Component {
     console.log(event.target.id);
     let currentComponent = this;
     const matchId = event.target.id;
-    var unirest = require("unirest");
-    unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${matchId}`)
-    .header('Accept', 'application/json')
-    .end(function (res) {
-      
-      const runnerBody = JSON.parse(res.raw_body);
-      currentComponent.setState({
-        selectedmatch: runnerBody
+
+    if (matchId !== "") {
+
+      console.log("matchId: " +matchId)
+
+      Storage.list(`${matchId}/`) // for listing ALL files without prefix, pass '' instead
+      .then(async result => {
+  
+        console.log('result.key' + result[0].key)
+  
+        const signedURL = await Storage.get("public/"+result[0].key); // get key from Storage.list
+  
+        console.log('signedURL: ' + signedURL);
+        currentComponent.setState({
+          selectedmatch: {
+            profileImage: signedURL
+          }
+        });
       });
-      
-      if (res.error) {
-        alert("Your subscription request failed, please try again later.");
+  
+  
+  
+      var unirest = require("unirest");
+      unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${matchId}`)
+      .header('Accept', 'application/json')
+      .end(function (res) {
+        
+        const runnerBody = JSON.parse(res.raw_body);
+        currentComponent.setState({
+          selectedmatch: runnerBody
+        });
+        
+        if (res.error) {
+          alert("Your subscription request failed, please try again later.");
+          return
+        }
         return
-      }
-      return
-    });
+      });
+  
+    }
 
 
   }
@@ -204,8 +248,8 @@ class Home extends Component {
     const cardStyle = { wordWrap: 'break-word', borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
 
     if (this.state.matches && this.state.matches[race]) {
-      console.log("ate.matches" + JSON.stringify(this.state.matches));
-      console.log("this.state.matches[ace] " + JSON.stringify(this.state.matches[race]));
+      // console.log("ate.matches" + JSON.stringify(this.state.matches));
+      // console.log("this.state.matches[ace] " + JSON.stringify(this.state.matches[race]));
 
       let matchesForRace = [];
       for(const match of this.state.matches[race]) {
@@ -298,75 +342,7 @@ class Home extends Component {
 
 
       );
-    } else {
-      return (
-
-        <div className="main">
-
-          <p><br />
-          </p>
-          <Container>
-            <Row>
-              <Col>
-             
-            <div className="card-bar">
-              <Card shadow={0} style={cardStyle}>
-
-                <h4><b>Personal Records (PRs)</b></h4>
-
-                <h5><b>Marathon</b></h5>
-                <hr class="solid" />
-
-                <p>Illinois Marathon (April 2018): <b>02:51:04</b></p>
-                <p><i><a
-                  href="https://hub.enmotive.com/events/2018-christie-clinic-illinois-marathon/registrants/324-jared-franzone"
-                  rel="noopener noreferrer" target="_blank" style={{ wordWrap: "break-word" }} >https://hub.enmotive.com/events/2018-christie-clinic-illinois-marathon/registrants/324-jared-franzone</a></i>
-                </p>
-
-                
-                <h5><b>5k</b></h5>
-                <hr class="solid" />
-
-                <p>Kansas City Turkey Trot 5k (November 2019): <b>17:36</b></p>
-                <p><i><a
-                  href="http://onlineraceresults.com/race/view_race.php?submit_action=select_result&race_id=71146&re_NO=5382#results"
-                  rel="noopener noreferrer" target="_blank" style={{ wordWrap: "break-word" }} >http://onlineraceresults.com/race/view_race.php?submit_action=select_result&race_id=71146&re_NO=5382#results</a></i>
-                </p>
-
-                <p></p>
-              </Card></div>
-               
-              </Col>
-
-            </Row>
-
-            <Row>
-              <Col>
-                <p><br />
-              Col 2
-            </p>
-               
-              </Col>
-
-            </Row>
-
-            <Row>
-              <Col>
-                <p><br />
-              Col 3
-            </p>
-               
-              </Col>
-
-            </Row>
-          </Container>
-
-        </div>
-
-
-
-      );
-    }
+    } 
 
   }
 }
