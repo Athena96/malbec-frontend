@@ -48,7 +48,7 @@ class Home extends Component {
   
         console.log('result.key' + JSON.stringify(result))
   
-        const signedURL = await Storage.get("public/"+result[0].key); // get key from Storage.list
+        const signedURL = await Storage.get(result[0].key); // get key from Storage.list
   
         console.log('signedURL: ' + signedURL);
         currentComponent.setState({
