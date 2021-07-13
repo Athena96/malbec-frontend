@@ -52,11 +52,10 @@ class Home extends Component {
   
         console.log('signedURL: ' + signedURL);
         currentComponent.setState({
-          myprofile: {
-            profileImage: signedURL
-          }
+            myprofileProfileImage: signedURL
         });
-      });
+      })
+      .catch(err => console.log(err));
 
 
 
@@ -147,12 +146,11 @@ class Home extends Component {
   renderUserProfile(profileToLoad) {
     const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
 
-      if (this.state[profileToLoad]) {
+    console.log("(this.state.myprofileProfileImage && profileToLoad === 'myprofile'): " + (this.state.myprofileProfileImage && profileToLoad === 'myprofile'));
+      if (this.state[profileToLoad] && ((this.state.myprofileProfileImage && profileToLoad === 'myprofile') || (this.state.selectedmatchProfileImage && profileToLoad === 'selectedmatch'))) {
           return (
                 <Card shadow={0} style={cardStyle}>
-
-
-                <img src={this.state[profileToLoad].profileImage} alt="Illinois Matahon 2018" style={{ maxWidth: "300px" }} border="5" />
+                <img src={profileToLoad === 'myprofile' ? this.state.myprofileProfileImage : this.state.selectedmatchProfileImage} alt="profile" style={{ maxWidth: "300px" }} border="5" />
                 <h4><b>Name:</b> {this.state[profileToLoad].firstname}</h4>
 
                 <h5><b>location:</b> {this.state[profileToLoad].location}</h5>
@@ -210,13 +208,11 @@ class Home extends Component {
   
         console.log('result.key' + result[0].key)
   
-        const signedURL = await Storage.get("public/"+result[0].key); // get key from Storage.list
+        const signedURL = await Storage.get(result[0].key); // get key from Storage.list
   
         console.log('signedURL: ' + signedURL);
         currentComponent.setState({
-          selectedmatch: {
-            profileImage: signedURL
-          }
+            selectedmatchProfileImage: signedURL
         });
       });
   
@@ -252,10 +248,11 @@ class Home extends Component {
       // console.log("this.state.matches[ace] " + JSON.stringify(this.state.matches[race]));
 
       let matchesForRace = [];
+      let i = 0;
       for(const match of this.state.matches[race]) {
         matchesForRace.push(
 
-          <Card id={match.runnerid} shadow={0} style={cardStyle} onClick={this.open}>
+          <Card id={match.runnerid} key={match.runnerid+i} shadow={0} style={cardStyle} onClick={this.open}>
           {/* <Button  onClick={this.open}> */}
     
             <h5><b>Runner</b>: {match.runnerid}</h5>
