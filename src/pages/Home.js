@@ -5,69 +5,32 @@ import { Card, Button } from 'react-mdl';
 import { Link } from "react-router-dom";
 
 import { Auth, Storage } from 'aws-amplify';
-import { getNiceTime } from '../helpers/TimeHelper';
+import { getNiceTime, getSecondsFromTimeString } from '../helpers/TimeHelper';
 
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
 
-
-/// State
-// {
-//   userprofile: {
-//     name: "",
-//     email: "",
-//     profilepic: "",
-//     ....,
-//     usertimes: {
-//       fivek: {
-
-//       },
-//       tenk: {
-
-//       }
-//     }
-//   },
-
-//   matchprofile: {
-//     name: "",
-//     email: "",
-//     profilepic: "",
-//     ....,
-//     usertimes: {
-//       fivek: {
-
-//       },
-//       tenk: {
-
-//       }
-//     }
-//   },
-
-
-//   matches: [
-//     {
-//       match1...
-//     },
-//     {
-//       match2...
-//     }
-//   ]
-// }
-
 class Home extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { 
-        windowWidth: window.innerWidth,
-        myprofile: null,
-        selectedmatch: null
+    this.state = {
+      windowWidth: window.innerWidth,
+      matchesLoading: true,
+      timesLoading: true,
+      runnerProfileLoading: true,
+      profilePicLoading: true,
+      selectedmatch: null
     };
     this.handleResize = this.handleResize.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.renderMatchesForRace = this.renderMatchesForRace.bind(this);
     this.open = this.open.bind(this);
+    this.save = this.save.bind(this);
+    this.saveRaceTime = this.saveRaceTime.bind(this);
+    this.imageUpdload = this.imageUpdload.bind(this);
+    this.handleChange = this.handleChange.bind(this);
   }
 
   handleResize(e) {
@@ -80,156 +43,126 @@ class Home extends Component {
   }
 
   componentDidMount() {
-    window.addEventListener("resize", this.handleResize);
-    
     var currentComponent = this;
-    
+
+    // 1. get current signed in runnerid
     this.getCurrentUserEmail().then((response) => {
-      
+      const signedInRunnerId = response;
 
-
-      Storage.list(`${response}/`) // for listing ALL files without prefix, pass '' instead
-      .then(async result => {
-  
-        console.log('result.key' + JSON.stringify(result))
-  
-        const signedURL = await Storage.get(result[0].key); // get key from Storage.list
-  
-        console.log('signedURL: ' + signedURL);
-        currentComponent.setState({
-            myprofileProfileImage: signedURL
-        });
-      })
-      .catch(err => console.log(err));
-
-
-
-      this.setState({user: response});
-
-      var unirest = require("unirest");
-      unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${response}`)
-      .header('Accept', 'application/json')
-      .end(function (res) {
-        
-        const runnerBody = JSON.parse(res.raw_body);
-        currentComponent.setState({
-          myprofile: runnerBody
-        });
-        
-        if (res.error) {
-          alert("Your subscription request failed, please try again later.");
-          return
-        }
-        return
-      });
-
-      unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${response}`)
-      .header('Accept', 'application/json')
-      .end(function (res) {
-          const timesBody = JSON.parse(res.raw_body);
-          
-          const timesBodyMap = {}
-          for (const time of timesBody) {
-              const race = time.race;
-              timesBodyMap[race] = time;
-          }
-
-          const raceTypes = ['fivek', 'tenk', 'halfmarathon', 'marathon'];
-          for (const race of raceTypes) {
-              if (timesBodyMap[race]) {
-                  currentComponent.setState({
-                      [race]: timesBodyMap[race]
-                  });
-              } else {
-                  currentComponent.setState({
-                      [race]: {
-
-                      }
-                  });
-              }
-          }
-
-          // for (const time of timesBody) {
-          //     const race = time.race;
-          //     currentComponent.setState({
-          //         [race]: time
-          //     });
-          // }
-
-
+      // 2. get their profile pic link
+      Storage.list(`${signedInRunnerId}/`)
+        .then(async result => {
+          const signedURL = await Storage.get(result[0].key);
           currentComponent.setState({
-              timesLoading: false,
-              runnerid: response
+            signedInRunnerProfilePic: signedURL,
+            profilePicLoading: false
+          });
+        }).catch(err => console.log(err));
+
+      // 3. get their profile
+      var unirest = require("unirest");
+      unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${signedInRunnerId}`)
+        .header('Accept', 'application/json')
+        .end(function (res) {
+          const runnerBody = JSON.parse(res.raw_body);
+          currentComponent.setState({
+            signedInRunner: runnerBody,
+            signedInRunnerProfileLoading: false
           });
 
           if (res.error) {
-              alert("Your subscription request failed, please try again later.");
-              return
+            alert("failed to get profile");
+            return
           }
-
-          // alert(JSON.stringify(currentComponent.state));
           return
-      });
-
-      unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/matches?runnerid=${response}`)
-      .header('Accept', 'application/json')
-      .end(function (res) {
-        const matches = JSON.parse(res.raw_body);
-        currentComponent.setState({
-          matches: matches
         });
 
-        if (res.error) {
-          alert("Your subscription request failed, please try again later.");
+      // 4. get their race times
+      unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${signedInRunnerId}`)
+        .header('Accept', 'application/json')
+        .end(function (res) {
+
+          // create map format
+          const timesBody = JSON.parse(res.raw_body);
+          const timesBodyMap = {}
+          for (const time of timesBody) {
+            const race = time.race;
+            time.time = getNiceTime(time.time);
+            timesBodyMap[race] = time;
+          }
+
+          const raceTypes = ['fivek', 'tenk', 'halfmarathon', 'marathon'];
+          const raceTimesObj = {}
+          for (const race of raceTypes) {
+            if (timesBodyMap[race]) {
+              raceTimesObj[race] = timesBodyMap[race];
+            } else {
+              raceTimesObj[race] = {}
+            }
+          }
+          currentComponent.setState({
+            userTimes: raceTimesObj,
+            userTimesLoading: false,
+          });
+
+          if (res.error) {
+            alert("failed to get times");
+            return
+          }
           return
-        }
-        console.log(res.raw_body);
-        return
-      });
+        });
+
+      unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/matches?runnerid=${signedInRunnerId}`)
+        .header('Accept', 'application/json')
+        .end(function (res) {
+          const matches = JSON.parse(res.raw_body);
+          currentComponent.setState({
+            matches: matches,
+            matchesLoading: false
+          });
+
+          if (res.error) {
+            alert("failed to get matches");
+            return
+          }
+          return
+        });
     });
   }
 
   componentWillUnmount() {
     window.addEventListener("resize", this.handleResize);
   }
+
+
   imageUpdload = async function (e) {
     const file = e.target.files[0];
     console.log('file: ' + JSON.stringify(file));
-
-    // delete whats in user/*
-
-
-    // then put
-
     try {
+      await Storage.list(this.state.signedInRunner.runnerid + '/') // for listing ALL files without prefix, pass '' instead
+        .then(async result => {
+          for (const f of result) {
+            console.log('deleting: ' + f.key);
+            await Storage.remove(f.key);
+          }
+        }).catch(err => console.log(err));
 
-      Storage.list(this.state.runnerid + '/') // for listing ALL files without prefix, pass '' instead
-    .then( async result => {
-      console.log(result);
-      for (const f of result) {
-        console.log('deleting: ' + f.key);
-        await Storage.remove(f.key);
-      }
-    })
-    .catch(err => console.log(err));
-
-
-      await Storage.put(this.state.runnerid + '/' + file.name, file, {
+      await Storage.put(this.state.signedInRunner.runnerid + '/' + file.name, file, {
         contentType: 'image/png' // contentType is optional
       });
 
-      const signedurl = await Storage.get(this.state.runnerid + '/' + file.name); // get key from Storage.list
-
-
+      const signedurl = await Storage.get(this.state.runnerid + '/' + file.name);
       this.setState({
-        profileImage: signedurl
+        signedInRunnerProfilePic: signedurl
+      }, () => {
+        window.location.reload();
       });
 
-      this.save();
+      // window.location.reload();
 
     } catch (error) {
       console.log('Error uploading file: ', error);
-    }  
+    }
   }
 
 
@@ -237,27 +170,25 @@ class Home extends Component {
     console.log("save");
 
     const runner = {
-      "location": this.state.location,
-      "firstname": this.state.firstname,
-      "runnerid": this.state.runnerid,
-      "email": this.state.email,
-      "phone": this.state.phone,
-      "gender": this.state.gender,
-      "coordinates": this.state.coordinates,
-      "birthday": this.state.birthday,
-      "profilepic": this.state.profileImage
+      "location": this.state.signedInRunner.location,
+      "firstname": this.state.signedInRunner.firstname,
+      "runnerid": this.state.signedInRunner.runnerid,
+      "email": this.state.signedInRunner.email,
+      "phone": this.state.signedInRunner.phone,
+      "gender": this.state.signedInRunner.gender,
+      "coordinates": this.state.signedInRunner.coordinates,
+      "birthday": this.state.signedInRunner.birthday,
     }
 
-
+    console.log("SAVE RUNNER: " + JSON.stringify(runner));
     var unirest = require("unirest");
     unirest.put(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners`)
       .header('Accept', 'application/json')
       .send(JSON.stringify(runner))
       .end(function (res) {
 
-
         if (res.error) {
-          alert("Your subscription request failed, please try again later.");
+          alert("Failed to Save.");
           return
         }
 
@@ -266,202 +197,176 @@ class Home extends Component {
         console.log(res.raw_body);
         return
       });
-
   }
 
-
-  // getRaceTimes(race, runnerid) {
-  //   var unirest = require("unirest");
-  //   unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${runnerid}`)
-  //     .header('Accept', 'application/json')
-  //     .end(function (res) {
-  //       console.log('HERRR');
-  //       console.log('runnerid ' + runnerid);
-
-  //       console.log(res.raw_body);
-        
-  //       const times = JSON.parse(res.raw_body);
-
-  //       const rows = [];
-  //       for (const time of times) {
-  //           if (time.race === race) {
-  //               rows.push(
-  //                 <li>{time.date} - {getNiceTime(time.time)} - </li>
-  //               );
-  //           }
-  //       }
-  //       return rows;
-  //     });
-  // }
-
   deleteRaceTime(event) {
-    console.log('event: ' + event.target.id);
     const raceType = event.target.id;
     const timeid = this.state[raceType].timeid;
     let currentComponent = this;
     var unirest = require("unirest");
     unirest.delete(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?timeid=${timeid}`)
-    .header('Accept', 'application/json')
-    .end(function (res) {
-      if (res.error) {
-        alert("Failed to delete time");
-        return
-      }
+      .header('Accept', 'application/json')
+      .end(function (res) {
+        if (res.error) {
+          alert("Failed to delete time");
+          return
+        }
 
-      currentComponent.setState({
+        currentComponent.setState({
           [raceType]: {}
+        });
+
+        alert("Successfully deleted your race time!");
+        return
       });
-      
-      alert("Successfully deleted your race time!");
-      console.log(res.raw_body);
-      return
-    });
-}
-
-  saveRaceTime(event) {
-    console.log('event: ' + event.target.id);
-
-    const raceType = event.target.id;
-    console.log(raceType);
-    console.log(this.state);
-    const time = {
-        "link": this.state[raceType].link,
-        "race": raceType,
-        "location": this.state.location,
-        "date": this.state[raceType].date,
-        "runnerid": this.state.runnerid,
-        "time": Number(this.state[raceType].time)
-    }
-    var unirest = require("unirest");
-    
-    if (this.state[raceType].timeid) {
-        time['timeid'] = this.state[raceType].timeid;
-        console.log('sending: ' + JSON.stringify(time));
-
-        unirest.put(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times`)
-          .header('Accept', 'application/json')
-          .send(JSON.stringify(time))
-          .end(function (res) {
-
-
-            if (res.error) {
-              alert("Failed to save time");
-              return
-            }
-
-            alert("Successfully saved your race time!");
-            console.log(res.raw_body);
-            return
-          });
-
-    } else {
-        time['timeid'] = "" + (new Date()).getTime();
-        console.log('sending NEW: ' + JSON.stringify(time));
-        unirest.post(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times`)
-          .header('Accept', 'application/json')
-          .send(JSON.stringify(time))
-          .end(function (res) {
-            if (res.error) {
-              alert("Failed to save time");
-              return
-            }
-
-            alert("Successfully saved your race time!");
-            console.log(res.raw_body);
-            return
-          });
-
-    }
-    
-
-
-}
-  renderRaceTime(race) {
-    const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
-    console.log('here: ' + JSON.stringify(this.state));
-
-    if (this.state[race]) {
-
-        return (
-
-            <Card id={race} key={race} shadow={0} style={cardStyle}>
-                <label>
-                    <b>Time:</b><br />
-                    <input
-                        className="rounded"
-                        name={`${race}-time`}
-                        type="text"
-                        value={this.state[race].time}
-                        onChange={this.handleChange} />
-                </label><br />
-                <label>
-                    <b>Date:</b><br />
-                    <input
-                        className="rounded"
-                        name={`${race}-date`}
-                        race={race}
-                        type="date"
-                        value={this.state[race].date}
-                        onChange={this.handleChange} />
-                </label><br />
-                <label>
-                    <b>Race Time Link:</b><br />
-                    <input
-                        className="rounded"
-                        name={`${race}-link`}
-                        type="text"
-                        race={race}
-
-                        value={this.state[race].link}
-                        onChange={this.handleChange} />
-                </label><br />
-                <button id={race} key={race} onClick={this.saveRaceTime} >Save</button>
-                {this.state[race].timeid ? <button id={race} key={race} onClick={this.deleteRaceTime} >Delete</button> : <></>}
-
-            </Card>);
-
-    } else {
-        return (
-            <Card key={race} id={race} shadow={0} style={cardStyle}>
-            </Card>
-        );
-    }
-}
-
-handleChange(event) {
-  var target = event.target;
-  var value = target.type === 'checkbox' ? target.checked : target.value;
-
-  const nameRace = target.name.split("-");
-  var race = nameRace[0];
-  var name = nameRace[1];
-
-
-  const currTime = this.state[race];
-
-  if (name === "gender") {
-      value = parseInt(value);
   }
 
-  currTime[name] = value;
+  saveRaceTime(event) {
+    const raceType = event.target.id;
+    const formattedTime = getSecondsFromTimeString(this.state.userTimes[raceType].time);
+    const time = {
+      "link": this.state.userTimes[raceType].link,
+      "race": raceType,
+      "location": this.state.signedInRunner.location,
+      "date": this.state.userTimes[raceType].date,
+      "runnerid": this.state.signedInRunner.runnerid,
+      "time": formattedTime
+    }
+    console.log("saving: " + JSON.stringify(time));
+    var unirest = require("unirest");
 
-  this.setState({
-      [race]: currTime
-  });
-}
+    if (this.state.userTimes[raceType].timeid) {
+      time['timeid'] = this.state.userTimes[raceType].timeid;
+      unirest.put(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times`)
+        .header('Accept', 'application/json')
+        .send(JSON.stringify(time))
+        .end(function (res) {
 
-  renderUserProfile() {
+
+          if (res.error) {
+            alert("Failed to save time");
+            return
+          }
+
+          alert("Successfully saved your race time!");
+
+          return
+        });
+
+    } else {
+      time['timeid'] = "" + (new Date()).getTime();
+      unirest.post(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times`)
+        .header('Accept', 'application/json')
+        .send(JSON.stringify(time))
+        .end(function (res) {
+          if (res.error) {
+            alert("Failed to save time");
+            return
+          }
+
+          alert("Successfully saved your race time!");
+
+          return
+        });
+    }
+  }
+
+  renderRaceTime(race) {
     const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
 
-    if (this.state['myprofile']) {
-      console.log(`this.state['myprofile'] ` + this.state['myprofile'].runnerid);
+    if (this.state.userTimesLoading === false) {
+      return (
+        <Card id={race} key={race} shadow={0} style={cardStyle}>
+          <label>
+            <b>Time:</b><br />
+            <input
+              className="rounded"
+              name={`${race}-time`}
+              type="text"
+              value={this.state.userTimes[race].time}
+              onChange={this.handleChange} />
+          </label><br />
+          <label>
+            <b>Date:</b><br />
+            <input
+              className="rounded"
+              name={`${race}-date`}
+              race={race}
+              type="date"
+              value={this.state.userTimes[race].date}
+              onChange={this.handleChange} />
+          </label><br />
+          <label>
+            <b>Race Time Link:</b><br />
+            <input
+              className="rounded"
+              name={`${race}-link`}
+              type="text"
+              race={race}
+
+              value={this.state.userTimes[race].link}
+              onChange={this.handleChange} />
+          </label><br />
+          <button id={race} key={race} onClick={this.saveRaceTime} >Save</button>
+          {this.state.userTimes[race].timeid ? <button id={race} key={race} onClick={this.deleteRaceTime} >Delete</button> : <></>}
+
+        </Card>);
+
+    } else {
+      return (
+        <Card key={race} id={race} shadow={0} style={cardStyle}>
+        </Card>
+      );
+    }
+  }
+
+  handleChange(event) {
+    var target = event.target;
+    var value = target.type === 'checkbox' ? target.checked : target.value;
+    const name = event.target.name;
+
+    console.log(event.target);
+
+    const updatingRunner = ['location', 'firstname', 'email', 'phone', 'gender', 'coordinates', 'birthday'].includes(name);
+    if (updatingRunner) {
+      console.log('udpating runner: ' + name);
+      const runner = this.state.signedInRunner;
+
+      if (name === "gender") {
+        value = parseInt(value);
+      }
+      runner[name] = value;
+
+      this.setState({
+        signedInRunner: runner
+      });
+    } else {
+      console.log('udpating time: ' + name);
+      const nameRace = target.name.split("-");
+      var race = nameRace[0];
+      var field = nameRace[1];
+
+      const times = this.state.userTimes;
+      times[race][field] = value;
+
+      this.setState({
+        userTimes: times
+      });
+    }
+  }
+
+  renderUserProfile() {
+    const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '15px' };
+
+    if (this.state.profilePicLoading === false && this.state.signedInRunnerProfileLoading === false && this.state.userTimesLoading === false) {
+
       return (
         <Card shadow={0} style={cardStyle}>
 
-          <img src={this.state.myprofileProfileImage} alt="Illinois Matahon 2018" style={{ maxWidth: "300px" }} border="5" />
+          <img src={this.state.signedInRunnerProfilePic} alt="Illinois Matahon 2018" style={{ maxWidth: "300px" }} border="5" />
           <input
-          type="file"
-          onChange={this.imageUpdload}
+            type="file"
+            onChange={this.imageUpdload}
           />
 
           <label>
@@ -470,18 +375,18 @@ handleChange(event) {
               className="rounded"
               name="firstname"
               type="text"
-              value={this.state['myprofile'].firstname}
+              value={this.state.signedInRunner.firstname}
               onChange={this.handleChange} />
-          </label><br />
+          </label>
           <label>
             <b>Location:</b><br />
             <input
               className="rounded"
               name="location"
               type="text"
-              value={this.state['myprofile'].location}
+              value={this.state.signedInRunner.location}
               onChange={this.handleChange} />
-          </label><br />
+          </label>
 
 
           <label>
@@ -490,15 +395,15 @@ handleChange(event) {
               className="rounded"
               name="birthday"
               type="date"
-              value={this.state['myprofile'].birthday}
+              value={this.state.signedInRunner.birthday}
               onChange={this.handleChange} />
-          </label><br />
+          </label>
 
           <b>Gender:</b>
           <div className="radio">
             <label>
               <input type="radio" name='gender' value={1}
-                checked={this.state['myprofile'].gender === 1}
+                checked={this.state.signedInRunner.gender === 1}
                 onChange={this.handleChange} />
               Woman
             </label>
@@ -506,44 +411,25 @@ handleChange(event) {
           <div className="radio">
             <label>
               <input type="radio" name='gender' value={2}
-                checked={this.state['myprofile'].gender === 2}
+                checked={this.state.signedInRunner.gender === 2}
                 onChange={this.handleChange} />
               Man
             </label>
           </div>
-
 
           <h5><b>5k Time</b></h5>
           {this.renderRaceTime('fivek')}
 
 
           <h5><b>10K Time</b></h5>
-                    {this.renderRaceTime('tenk')}
+          {this.renderRaceTime('tenk')}
 
-                    <h5><b>1/2 Marathon Time</b></h5>
-                    {this.renderRaceTime('halfmarathon')}
-
-
-                    <h5><b> Marathon Time</b></h5>
-                    {this.renderRaceTime('marathon')}
-
-          {/* <h5><b>10K Times</b></h5>
-          <ul>
-          {this.getRaceTimes('tenk') ? this.getRaceTimes('tenk') : <Link to="/times">Click to add race times</Link>}
-          </ul>
+          <h5><b>1/2 Marathon Time</b></h5>
+          {this.renderRaceTime('halfmarathon')}
 
 
-          <h5><b>1/2 Marathon Times</b></h5>
-          <ul>
-
-          {this.getRaceTimes('halfmarathon') ? this.getRaceTimes('halfmarathon') : <Link to="/times">Click to add race times</Link>}
-
-          </ul>
-
-          <h5><b> Marathon Times</b></h5>
-          <ul>
-          {this.getRaceTimes('marathon') ? this.getRaceTimes('marathon') : <Link to="/times">Click to add race times</Link>}
-          </ul> */}
+          <h5><b> Marathon Time</b></h5>
+          {this.renderRaceTime('marathon')}
 
           <h5><b> Contact Info</b></h5>
           <ul>
@@ -554,7 +440,7 @@ handleChange(event) {
                 className="rounded"
                 name="phone"
                 type="phone"
-                value={this.state['myprofile'].phone}
+                value={this.state.signedInRunner.phone}
                 onChange={this.handleChange} />
             </label><br />
 
@@ -564,7 +450,7 @@ handleChange(event) {
                 className="rounded"
                 name="phone"
                 type="phone"
-                value={this.state['myprofile'].email}
+                value={this.state.signedInRunner.email}
                 onChange={this.handleChange} />
             </label><br />
 
@@ -577,126 +463,166 @@ handleChange(event) {
     }
   }
 
+  getDisplayRaceTimes(race) {
+    if (this.state.selectedmatchTimesLoading === false) {
+      return (
+        <li> {this.state.selectedmatchTimes[race].date} - {this.state.selectedmatchTimes[race].time}</li>
+      );
+    }
+    return (<></>);
+
+  }
+
+
   renderProfile(profileToLoad) {
     const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
 
-    console.log("(this.state.myprofileProfileImage && profileToLoad === 'myprofile'): " + (this.state.myprofileProfileImage && profileToLoad === 'myprofile'));
-      if (this.state[profileToLoad] && ((this.state.myprofileProfileImage && profileToLoad === 'myprofile') || (this.state.selectedmatchProfileImage && profileToLoad === 'selectedmatch'))) {
-          return (
-                <Card shadow={0} style={cardStyle}>
-                <img src={profileToLoad === 'myprofile' ? this.state.myprofileProfileImage : this.state.selectedmatchProfileImage} alt="profile" style={{ maxWidth: "300px" }} border="5" />
-                <h4><b>Name:</b> {this.state[profileToLoad].firstname}</h4>
+    if (this.state[profileToLoad] && ((this.state.myprofileProfileImage && profileToLoad === 'myprofile') || (this.state.selectedmatchProfileImage && profileToLoad === 'selectedmatch'))) {
+      return (
+        <Card shadow={0} style={cardStyle}>
+          <img src={profileToLoad === 'myprofile' ? this.state.myprofileProfileImage : this.state.selectedmatchProfileImage} alt="profile" style={{ maxWidth: "300px" }} border="5" />
+          <h4><b>Name:</b> {this.state[profileToLoad].firstname}</h4>
 
-                <h5><b>location:</b> {this.state[profileToLoad].location}</h5>
+          <h5><b>Location:</b> {this.state[profileToLoad].location}</h5>
 
-                <h5><b>birthday:</b> {this.state[profileToLoad].birthday}</h5>
+          <h5><b>Birthday:</b> {this.state[profileToLoad].birthday}</h5>
 
-                <h5><b>gender:</b> {this.state[profileToLoad].gender ? (this.state[profileToLoad].gender === 1 ? "Woman" : "Man") : <></> }</h5>
+          <h5><b>Gender:</b> {this.state[profileToLoad].gender ? (this.state[profileToLoad].gender === 1 ? "Woman" : "Man") : <></>}</h5>
 
-                {/* <h5><b>5k Times</b></h5>
-                <ul>
-                    {this.getRaceTimes('fivek')}
-                </ul>
-
-
-                <h5><b>10K Times</b></h5>
-                <ul>
-                    {this.getRaceTimes('tenk')}
-                </ul>
+          <h5><b>5k Times</b></h5>
+          <ul>
+            {this.getDisplayRaceTimes('fivek')}
+          </ul>
 
 
-                <h5><b>1/2 Marathon Times</b></h5>
-                <ul>
-                    {this.getRaceTimes('halfmarathon')}
-                </ul>
+          <h5><b>10K Times</b></h5>
+          <ul>
+            {this.getDisplayRaceTimes('tenk')}
+          </ul>
 
-                <h5><b> Marathon Times</b></h5>
-                <ul>
-                    {this.getRaceTimes('marathon')}
-                </ul> */}
 
-                <h5><b> Contact Info</b></h5>
-                <ul>
-                    <li>phone number: {this.state[profileToLoad].phone}</li>
-                    <li>email: {this.state[profileToLoad].email}</li>
-                </ul>
-                </Card>
-          )
-      } else {
-       return( <Card> </Card>);
-      }
+          <h5><b>1/2 Marathon Times</b></h5>
+          <ul>
+            {this.getDisplayRaceTimes('halfmarathon')}
+          </ul>
+
+          <h5><b> Marathon Times</b></h5>
+          <ul>
+            {this.getDisplayRaceTimes('marathon')}
+          </ul>
+
+          <h5><b> Contact Info</b></h5>
+          <ul>
+            <li>phone number: {this.state[profileToLoad].phone}</li>
+            <li>email: {this.state[profileToLoad].email}</li>
+          </ul>
+        </Card>
+      )
+    } else {
+      return (<Card> </Card>);
+    }
   }
 
   open(event) {
-    console.log('open');
-    console.log(event.target.id);
     let currentComponent = this;
     const matchId = event.target.id;
 
     if (matchId !== "") {
 
-      console.log("matchId: " +matchId)
+      console.log("matchId: " + matchId)
 
       Storage.list(`${matchId}/`) // for listing ALL files without prefix, pass '' instead
-      .then(async result => {
-  
-        console.log('result.key' + result[0].key)
-  
-        const signedURL = await Storage.get(result[0].key); // get key from Storage.list
-  
-        console.log('signedURL: ' + signedURL);
-        currentComponent.setState({
+        .then(async result => {
+
+          console.log('result.key' + result[0].key)
+
+          const signedURL = await Storage.get(result[0].key); // get key from Storage.list
+
+          console.log('signedURL: ' + signedURL);
+          currentComponent.setState({
             selectedmatchProfileImage: signedURL
+          });
         });
-      });
-  
-  
-  
+
+
+
       var unirest = require("unirest");
       unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${matchId}`)
-      .header('Accept', 'application/json')
-      .end(function (res) {
-        
-        const runnerBody = JSON.parse(res.raw_body);
-        currentComponent.setState({
-          selectedmatch: runnerBody
-        });
-        
-        if (res.error) {
-          alert("Your subscription request failed, please try again later.");
+        .header('Accept', 'application/json')
+        .end(function (res) {
+
+          const runnerBody = JSON.parse(res.raw_body);
+          currentComponent.setState({
+            selectedmatch: runnerBody,
+            selectedmatchLoading: false
+          });
+
+          if (res.error) {
+            alert("failed to open profile");
+            return
+          }
           return
-        }
-        return
-      });
-  
+        });
+
+      unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${matchId}`)
+        .header('Accept', 'application/json')
+        .end(function (res) {
+
+          // create map format
+          const timesBody = JSON.parse(res.raw_body);
+          const timesBodyMap = {}
+          for (const time of timesBody) {
+            const race = time.race;
+            time.time = getNiceTime(time.time);
+            timesBodyMap[race] = time;
+          }
+
+          const raceTypes = ['fivek', 'tenk', 'halfmarathon', 'marathon'];
+          const raceTimesObj = {}
+          for (const race of raceTypes) {
+            if (timesBodyMap[race]) {
+              raceTimesObj[race] = timesBodyMap[race];
+            } else {
+              raceTimesObj[race] = {}
+            }
+          }
+          console.log("raceTimesObj: " + JSON.stringify(raceTimesObj));
+          currentComponent.setState({
+            selectedmatchTimes: raceTimesObj,
+            selectedmatchTimesLoading: false,
+          });
+
+          if (res.error) {
+            alert("failed to get times");
+            return
+          }
+          return
+        });
+
     }
 
 
   }
 
   renderMatchesForRace(race) {
-    const cardStyle = { wordWrap: 'break-word',  borderRadius: "5px",   padding: '25px' };
-
-    if (this.state.matches && this.state.matches[race]) {
-      // console.log("ate.matches" + JSON.stringify(this.state.matches));
-      // console.log("this.state.matches[ace] " + JSON.stringify(this.state.matches[race]));
+    const cardStyle = { wordWrap: 'break-word', borderRadius: "5px", padding: '25px' };
+    if (this.state.matchesLoading === false) {
 
       let matchesForRace = [];
       let i = 0;
-      for(const match of this.state.matches[race]) {
+      for (const match of this.state.matches[race]) {
         matchesForRace.push(
+          <Card id={match.runnerid} key={match.runnerid + i} shadow={0} style={cardStyle} onClick={this.open}>
+            {/* <Button  onClick={this.open}> */}
 
-          <Card id={match.runnerid} key={match.runnerid+i} shadow={0} style={cardStyle} onClick={this.open}>
-          {/* <Button  onClick={this.open}> */}
-    
             <h5><b>Runner</b>: {match.runnerid}</h5>
 
-            <h5><b>time</b>: {getNiceTime(match.time)}</h5>
-            <h5><b>location</b>: {match.location}</h5>
+            <h5><b>Time</b>: {getNiceTime(match.time)}</h5>
+            <h5><b>Location</b>: {match.location}</h5>
 
-            <h5><b>date:</b> {match.date}</h5>
+            <h5><b>Date:</b> {match.date}</h5>
 
-            <h5><b>link</b>: <a href={match.link}>race link</a></h5>
+            <h5><b>Link</b>: <a href={match.link}>race link</a></h5>
             {/* </Button> */}
 
           </Card>
@@ -708,73 +634,56 @@ handleChange(event) {
 
       return (
         <Card shadow={0} style={cardStyle}>
-  
+
         </Card>
       );
-    }
-    
-  }
-
-  renderSelectedMatch() {
-
-    if (this.state.selectedMatch) {
-
     }
 
   }
 
   render() {
-    const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
-    const { windowWidth } = this.state;
-
-      return (
-        <div className="main">
-
-          <p><br />
-          </p>
-          <Container>
-            <Row>
-              <Col>
+    return (
+      <div className="main">
+        <p><br />
+        </p>
+        <Container>
+          <Row>
+            <Col>
               <h3><b>Me</b></h3>
               {this.renderUserProfile()}
-              </Col>
+            </Col>
 
-              <Col>
+            <Col>
               <h3><b>Matches</b></h3>
 
-                <h5><b>5k Matches</b></h5>
-                {this.renderMatchesForRace('fivek')}
+              <h5><b>5k Matches</b></h5>
+              {this.renderMatchesForRace('fivek')}
 
-                <h5><b>10K Matches</b></h5>
-                {this.renderMatchesForRace('tenk')}
+              <h5><b>10K Matches</b></h5>
+              {this.renderMatchesForRace('tenk')}
 
-                <h5><b>1/2 Marathon Matches</b></h5>
-                {this.renderMatchesForRace('halfmarathon')}
+              <h5><b>1/2 Marathon Matches</b></h5>
+              {this.renderMatchesForRace('halfmarathon')}
 
-                <h5><b> Marathon Matches</b></h5>
+              <h5><b> Marathon Matches</b></h5>
 
-                {this.renderMatchesForRace('marathon')}
-              
-              </Col>
+              {this.renderMatchesForRace('marathon')}
+
+            </Col>
 
 
-              <Col>
+            <Col>
               <h3><b>Match</b></h3>
               {this.renderProfile('selectedmatch')}
-              </Col>
+            </Col>
 
 
-            </Row>
+          </Row>
 
-          </Container>
+        </Container>
 
-        </div>
-
-
-
-      );
-    
-
+      </div>
+    );
   }
 }
 
