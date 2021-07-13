@@ -726,7 +726,7 @@ handleChange(event) {
   render() {
     const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
     const { windowWidth } = this.state;
-    if (windowWidth > 375) {
+
       return (
         <div className="main">
 
@@ -773,7 +773,7 @@ handleChange(event) {
 
 
       );
-    } 
+    
 
   }
 }
