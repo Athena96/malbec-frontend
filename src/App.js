@@ -104,9 +104,6 @@ class App extends Component {
           <Navbar.Collapse id="responsive-navbar-nav">
           
           <Nav className="mr-auto">
-            <Nav.Link href="/update/profile">Edit Profile</Nav.Link>
-            <Nav.Link href="/times">Edit Race Times</Nav.Link>
-
             <Nav.Link onClick={this.signOut}><b>Sign Out</b></Nav.Link>
 
           </Nav>

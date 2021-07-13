@@ -9,26 +9,27 @@ import { Link } from "react-router-dom";
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
-var IS_UPDATE = false;
+
 
 class Profile extends Component {
 
   constructor(props) {
     super(props);
+    const runnerid = props.history.location.pathname.split('/')[2];
+
     this.state = {
       windowWidth: window.innerWidth,
       runnerLoading: true,
       timesLoading: true,
+      runnerid: runnerid
     };
 
-    IS_UPDATE = props.history.location.pathname.split('/')[1] === "update";
-
+    
     this.handleResize = this.handleResize.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.handleChange = this.handleChange.bind(this);
-    this.save = this.save.bind(this);
-    this.imageUpdload = this.imageUpdload.bind(this);
   }
+  
   async getCurrentUserEmail() {
     var user = await Auth.currentAuthenticatedUser();
     return user.attributes.email;
@@ -58,10 +59,7 @@ class Profile extends Component {
     window.addEventListener("resize", this.handleResize);
     var currentComponent = this;
 
-    this.getCurrentUserEmail().then((response) => {
-      if (IS_UPDATE) {
-
-        Storage.list(`${response}/`) // for listing ALL files without prefix, pass '' instead
+    Storage.list(`${this.state.runnerid}/`) // for listing ALL files without prefix, pass '' instead
     .then(async result => {
 
       console.log('result.key' + JSON.stringify(result))
@@ -77,7 +75,7 @@ class Profile extends Component {
 
         var unirest = require("unirest");
         console.log("refetch///");
-        unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${response}`)
+        unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${this.state.runnerid}`)
           .header('Accept', 'application/json')
           .end(function (res) {
             console.log(res.raw_body);
@@ -105,7 +103,7 @@ class Profile extends Component {
           });
 
 
-        unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${response}`)
+        unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${this.state.runnerid}`)
           .header('Accept', 'application/json')
           //   .send(JSON.stringify(objToSending))
           .end(function (res) {
@@ -128,12 +126,6 @@ class Profile extends Component {
             // alert(JSON.stringify(currentComponent.state));
             return
           });
-
-      }
-
-    });
-
-
   }
 
   componentWillUnmount() {
@@ -145,7 +137,7 @@ class Profile extends Component {
     for (const time of this.state.times) {
       if (time.race === race) {
         rows.push(
-          <li><Link to="/times"> (click to edit race times) {time.date} - {time.time}</Link></li>
+          <li> {time.date} - {time.time}</li>
 
         );
       }
@@ -176,8 +168,6 @@ class Profile extends Component {
       .header('Accept', 'application/json')
       .send(JSON.stringify(runner))
       .end(function (res) {
-
-
         if (res.error) {
           alert("Your subscription request failed, please try again later.");
           return
@@ -191,174 +181,61 @@ class Profile extends Component {
 
   }
 
-  imageUpdload = async function (e) {
-    const file = e.target.files[0];
-    console.log('file: ' + JSON.stringify(file));
-
-    // delete whats in user/*
-
-
-    // then put
-
-    try {
-
-      Storage.list(this.state.runnerid + '/') // for listing ALL files without prefix, pass '' instead
-    .then( async result => {
-      console.log(result);
-      for (const f of result) {
-        console.log('deleting: ' + f.key);
-        await Storage.remove(f.key);
-      }
-    })
-    .catch(err => console.log(err));
-
-
-      await Storage.put(this.state.runnerid + '/' + file.name, file, {
-        contentType: 'image/png' // contentType is optional
-      });
-
-      const signedurl = await Storage.get(this.state.runnerid + '/' + file.name); // get key from Storage.list
-
-
-      this.setState({
-        profileImage: signedurl
-      });
-
-      this.save();
-
-    } catch (error) {
-      console.log('Error uploading file: ', error);
-    }  
-  }
 
   renderUserProfile() {
     const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
+      if (this.state && this.state.profileImage) {
+          return (
+                <Card shadow={0} style={cardStyle}>
+                <img src={this.state.profileImage} alt="profile" style={{ maxWidth: "300px" }} border="5" />
+                <h4><b>Name:</b> {this.state.firstname}</h4>
 
-    if (this.state && !this.state.runnerLoading && !this.state.timesLoading) {
-      console.log('this.state.profileImage: ' + this.state.profileImage);
-      return (
-        <Card shadow={0} style={cardStyle}>
+                <h5><b>location:</b> {this.state.location}</h5>
 
-          <img src={this.state.profileImage} alt="Illinois Matahon 2018" style={{ maxWidth: "300px" }} border="5" />
-          <input
-          type="file"
-          onChange={this.imageUpdload}
-          />
+                <h5><b>birthday:</b> {this.state.birthday}</h5>
 
-          <label>
-            <b>Name:</b><br />
-            <input
-              className="rounded"
-              name="firstname"
-              type="text"
-              value={this.state.firstname}
-              onChange={this.handleChange} />
-          </label><br />
-          <label>
-            <b>Location:</b><br />
-            <input
-              className="rounded"
-              name="location"
-              type="text"
-              value={this.state.location}
-              onChange={this.handleChange} />
-          </label><br />
+                <h5><b>gender:</b> {this.state.gender ? (this.state.gender === 1 ? "Woman" : "Man") : <></> }</h5>
+
+                <h5><b>5k Times</b></h5>
+                <ul>
+                    {this.getRaceTimes('fivek')}
+                </ul>
 
 
-          <label>
-            <b>Birthday:</b><br />
-            <input
-              className="rounded"
-              name="birthday"
-              type="date"
-              value={this.state.birthday}
-              onChange={this.handleChange} />
-          </label><br />
-
-          <b>Gender:</b>
-          <div className="radio">
-            <label>
-              <input type="radio" name='gender' value={1}
-                checked={this.state.gender === 1}
-                onChange={this.handleChange} />
-              Woman
-            </label>
-          </div>
-          <div className="radio">
-            <label>
-              <input type="radio" name='gender' value={2}
-                checked={this.state.gender === 2}
-                onChange={this.handleChange} />
-              Man
-            </label>
-          </div>
+                <h5><b>10K Times</b></h5>
+                <ul>
+                    {this.getRaceTimes('tenk')}
+                </ul>
 
 
-          <h5><b>5k Times</b></h5>
-          <ul>
-            {this.getRaceTimes('fivek') ? this.getRaceTimes('fivek') : <Link to="/times">Click to add race times</Link>}
-          </ul>
+                <h5><b>1/2 Marathon Times</b></h5>
+                <ul>
+                    {this.getRaceTimes('halfmarathon')}
+                </ul>
 
+                <h5><b> Marathon Times</b></h5>
+                <ul>
+                    {this.getRaceTimes('marathon')}
+                </ul> 
 
-          <h5><b>10K Times</b></h5>
-          <ul>
-          {this.getRaceTimes('tenk') ? this.getRaceTimes('tenk') : <Link to="/times">Click to add race times</Link>}
-          </ul>
-
-
-          <h5><b>1/2 Marathon Times</b></h5>
-          <ul>
-
-          {this.getRaceTimes('halfmarathon') ? this.getRaceTimes('halfmarathon') : <Link to="/times">Click to add race times</Link>}
-
-          </ul>
-
-          <h5><b> Marathon Times</b></h5>
-          <ul>
-          {this.getRaceTimes('marathon') ? this.getRaceTimes('marathon') : <Link to="/times">Click to add race times</Link>}
-          </ul>
-
-          <h5><b> Contact Info</b></h5>
-          <ul>
-
-            <label>
-              <b>Phone Number:</b><br />
-              <input
-                className="rounded"
-                name="phone"
-                type="phone"
-                value={this.state.phone}
-                onChange={this.handleChange} />
-            </label><br />
-
-            <label>
-              <b>Email:</b><br />
-              <input
-                className="rounded"
-                name="phone"
-                type="phone"
-                value={this.state.email}
-                onChange={this.handleChange} />
-            </label><br />
-
-          </ul>
-
-          <Button style={{ background: 'grey' }} onClick={this.save}>Save</Button>
-
-        </Card>
-      )
-    }
+                <h5><b> Contact Info</b></h5>
+                <ul>
+                    <li>phone number: {this.state.phone}</li>
+                    <li>email: {this.state.email}</li>
+                </ul>
+                </Card>
+          )
+      } else {
+       return( <Card> </Card>);
+      }
   }
-
 
   render() {
 
     return (
-
       <div>
         {this.renderUserProfile()}
       </div>
-
     );
 
   }
