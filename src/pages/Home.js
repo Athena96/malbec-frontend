@@ -116,6 +116,7 @@ class Home extends Component {
         .header('Accept', 'application/json')
         .end(function (res) {
           const matches = JSON.parse(res.raw_body);
+          console.log("matches: " + JSON.stringify(matches));
           currentComponent.setState({
             matches: matches,
             matchesLoading: false
@@ -609,28 +610,37 @@ class Home extends Component {
     const cardStyle = { wordWrap: 'break-word', borderRadius: "5px", padding: '25px' };
     if (this.state.matchesLoading === false) {
 
-      let matchesForRace = [];
-      let i = 0;
-      for (const match of this.state.matches[race]) {
-        matchesForRace.push(
-          <Card id={match.runnerid} key={match.runnerid + i} shadow={0} style={cardStyle} onClick={this.open}>
-            {/* <Button  onClick={this.open}> */}
-
-            <h5><b>Runner</b>: {match.runnerid}</h5>
-
-            <h5><b>Time</b>: {getNiceTime(match.time)}</h5>
-            <h5><b>Location</b>: {match.location}</h5>
-
-            <h5><b>Date:</b> {match.date}</h5>
-
-            <h5><b>Link</b>: <a href={match.link}>race link</a></h5>
-            {/* </Button> */}
-
-          </Card>
-
-        );
+      console.log('race; ' + race);
+      console.log('this.state.matches[race]: ' + JSON.stringify(this.state.matches[race]))
+      
+      if (this.state.matches && this.state.matches[race] && this.state.matches[race].length > 0) {
+        let matchesForRace = [];
+        let i = 0;
+        for (const match of this.state.matches[race]) {
+          matchesForRace.push(
+            <Card id={match.runnerid} key={match.runnerid + i} shadow={0} style={cardStyle} onClick={this.open}>
+              {/* <Button  onClick={this.open}> */}
+  
+              <h5><b>Runner</b>: {match.runnerid}</h5>
+  
+              <h5><b>Time</b>: {getNiceTime(match.time)}</h5>
+              <h5><b>Location</b>: {match.location}</h5>
+  
+              <h5><b>Date:</b> {match.date}</h5>
+  
+              <h5><b>Link</b>: <a href={match.link}>race link</a></h5>
+              {/* </Button> */}
+  
+            </Card>
+          );
+  
+          i += 1;
+        }
+        return (matchesForRace);
+      } else {
+        return (<></>);
       }
-      return (matchesForRace);
+
     } else {
 
       return (
