@@ -272,10 +272,11 @@ class Home extends Component {
   }
 
   renderRaceTime(race) {
-    const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
+    const cardStyle = {  padding: '15px' };
 
     if (this.state.userTimesLoading === false) {
       return (
+        
         <Card id={race} key={race} shadow={0} style={cardStyle}>
           <label>
             <b>Time:</b><br />
@@ -356,7 +357,7 @@ class Home extends Component {
   }
 
   renderUserProfile() {
-    const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '15px' };
+    const cardStyle = { borderWidth: '5px', borderRadius: "5px", padding: '15px' };
 
     if (this.state.profilePicLoading === false && this.state.signedInRunnerProfileLoading === false && this.state.userTimesLoading === false) {
 
@@ -643,9 +644,8 @@ class Home extends Component {
 
   render() {
     return (
-      <div className="main">
-        <p><br />
-        </p>
+      <div className="indent">
+   
         <Container>
           <Row>
             <Col>
@@ -654,7 +654,7 @@ class Home extends Component {
             </Col>
 
             <Col>
-              <h3><b>Matches</b></h3>
+              <h3><b>My Matches</b></h3>
 
               <h5><b>5k Matches</b></h5>
               {this.renderMatchesForRace('fivek')}
@@ -673,7 +673,7 @@ class Home extends Component {
 
 
             <Col>
-              <h3><b>Match</b></h3>
+              <h3><b>Selected Match</b></h3>
               {this.renderProfile('selectedmatch')}
             </Col>
 

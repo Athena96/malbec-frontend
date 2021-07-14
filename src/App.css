@@ -136,8 +136,7 @@ a:active {
     /* Same as the width of the sidenav */
     font-family: "Helvetica Neue";
     margin: auto;
-    padding-left: 25px;
-    padding-right: 25px;
+
     padding-top: 25px;
     padding-bottom: 25px;
 }
