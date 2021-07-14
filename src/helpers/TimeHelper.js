@@ -9,8 +9,6 @@ exports.getNiceTime = (durationSeconds) => {
     var hours = seconds >= 60*60 ? Math.floor(durationSeconds / 3600) : null;
 
     var finalTime = hours ? str_pad_left(hours,'0',2) + ":" + str_pad_left(minutes,'0',2)+':'+str_pad_left(seconds,'0',2) : str_pad_left(minutes,'0',2)+':'+str_pad_left(seconds,'0',2);
-
-    console.log('getNiceTime: ' + finalTime)
     return finalTime;
 }
 

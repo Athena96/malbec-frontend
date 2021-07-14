@@ -10,7 +10,16 @@ import { getNiceTime, getSecondsFromTimeString } from '../helpers/TimeHelper';
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
+import placeholderImage from '../static/images/placeholder.png'
 
+var LAT = null;
+var LON = null;
+const RACE_MAP = {
+  fivek: "5k",
+  tenk: "10k",
+  halfmarathon: "Half Marathon",
+  marathon: "Marathon"
+}
 class Home extends Component {
 
   constructor(props) {
@@ -29,6 +38,7 @@ class Home extends Component {
     this.open = this.open.bind(this);
     this.save = this.save.bind(this);
     this.saveRaceTime = this.saveRaceTime.bind(this);
+    this.deleteRaceTime = this.deleteRaceTime.bind(this);
     this.imageUpdload = this.imageUpdload.bind(this);
     this.handleChange = this.handleChange.bind(this);
   }
@@ -45,6 +55,27 @@ class Home extends Component {
   componentDidMount() {
     var currentComponent = this;
 
+
+    function success(pos) {
+      var crd = pos.coords;
+    
+      console.log('Your current position is:');
+      console.log(`Latitude : ${crd.latitude}`);
+      console.log(`Longitude: ${crd.longitude}`);
+      console.log(`More or less ${crd.accuracy} meters.`);
+
+      LAT = crd.latitude;
+      LON = crd.longitude;
+      console.log(currentComponent);
+      currentComponent.setState({
+        lat: LAT,
+        lon: LON
+      })
+    }
+    
+    function error(err) {
+      console.warn(`ERROR(${err.code}): ${err.message}`);
+    }
     // 1. get current signed in runnerid
     this.getCurrentUserEmail().then((response) => {
       const signedInRunnerId = response;
@@ -65,10 +96,40 @@ class Home extends Component {
         .header('Accept', 'application/json')
         .end(function (res) {
           const runnerBody = JSON.parse(res.raw_body);
+          
+          // 3.5 set their location if not set
           currentComponent.setState({
             signedInRunner: runnerBody,
             signedInRunnerProfileLoading: false
+          }, () => {
+            if (!Object.keys(runnerBody).includes('coordinates')) {
+              if (navigator.geolocation) {
+  
+                navigator.geolocation.getCurrentPosition((position) => {
+                  runnerBody['coordinates'] = `${position.coords.latitude}#${position.coords.longitude}`;
+                  
+                  // get location string
+                  unirest.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`)
+                  .header('Accept', 'application/json')
+                  .end(function (res) {
+                    const locationResponse = JSON.parse(res.raw_body);
+                    const cityStateString = `${locationResponse.city}, ${locationResponse.principalSubdivision}`;
+                    runnerBody['location'] = cityStateString;
+                    
+                    console.log('updating runner with coords');
+                    console.log(JSON.stringify(runnerBody));
+                    currentComponent.setState({
+                      signedInRunner: runnerBody
+                    }, () => {
+                      currentComponent.save(false);
+                    });
+                  });
+                });
+              } 
+            }
           });
+
+
 
           if (res.error) {
             alert("failed to get profile");
@@ -116,7 +177,6 @@ class Home extends Component {
         .header('Accept', 'application/json')
         .end(function (res) {
           const matches = JSON.parse(res.raw_body);
-          console.log("matches: " + JSON.stringify(matches));
           currentComponent.setState({
             matches: matches,
             matchesLoading: false
@@ -159,15 +219,13 @@ class Home extends Component {
         window.location.reload();
       });
 
-      // window.location.reload();
-
     } catch (error) {
       console.log('Error uploading file: ', error);
     }
   }
 
 
-  save() {
+  save(showAlert) {
     console.log("save");
 
     const runner = {
@@ -193,17 +251,18 @@ class Home extends Component {
           return
         }
 
-        alert("Saved your runner profile!");
-
-        console.log(res.raw_body);
+        if (showAlert) {
+          alert("Saved your runner profile!");
+        }
         return
       });
   }
 
   deleteRaceTime(event) {
     const raceType = event.target.id;
-    const timeid = this.state[raceType].timeid;
-    let currentComponent = this;
+    console.log('raceType ' + raceType);
+    console.log('this.userTimes ' + JSON.stringify(this.userTimes));
+    const timeid = this.state.userTimes[raceType].timeid;
     var unirest = require("unirest");
     unirest.delete(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?timeid=${timeid}`)
       .header('Accept', 'application/json')
@@ -213,9 +272,8 @@ class Home extends Component {
           return
         }
 
-        currentComponent.setState({
-          [raceType]: {}
-        });
+        
+        window.location.reload();
 
         alert("Successfully deleted your race time!");
         return
@@ -228,16 +286,20 @@ class Home extends Component {
     const time = {
       "link": this.state.userTimes[raceType].link,
       "race": raceType,
+      "coordinates": this.state.signedInRunner.coordinates,
       "location": this.state.signedInRunner.location,
       "date": this.state.userTimes[raceType].date,
       "runnerid": this.state.signedInRunner.runnerid,
       "time": formattedTime
     }
-    console.log("saving: " + JSON.stringify(time));
     var unirest = require("unirest");
 
     if (this.state.userTimes[raceType].timeid) {
+
       time['timeid'] = this.state.userTimes[raceType].timeid;
+
+      console.log("savinghere: " + JSON.stringify(time));
+
       unirest.put(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times`)
         .header('Accept', 'application/json')
         .send(JSON.stringify(time))
@@ -256,6 +318,9 @@ class Home extends Component {
 
     } else {
       time['timeid'] = "" + (new Date()).getTime();
+
+      console.log("savingthere: " + JSON.stringify(time));
+
       unirest.post(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times`)
         .header('Accept', 'application/json')
         .send(JSON.stringify(time))
@@ -316,7 +381,7 @@ class Home extends Component {
 
     } else {
       return (
-        <Card key={race} id={race} shadow={0} style={cardStyle}>
+        <Card id={race} shadow={0} style={cardStyle}>
         </Card>
       );
     }
@@ -479,10 +544,10 @@ class Home extends Component {
   renderProfile(profileToLoad) {
     const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
 
-    if (this.state[profileToLoad] && ((this.state.myprofileProfileImage && profileToLoad === 'myprofile') || (this.state.selectedmatchProfileImage && profileToLoad === 'selectedmatch'))) {
+    if (this.state[profileToLoad]) {
       return (
         <Card shadow={0} style={cardStyle}>
-          <img src={profileToLoad === 'myprofile' ? this.state.myprofileProfileImage : this.state.selectedmatchProfileImage} alt="profile" style={{ maxWidth: "300px" }} border="5" />
+          <img src={this.state.selectedmatchProfileImage !== null ? this.state.selectedmatchProfileImage : placeholderImage} alt="profile" style={{ maxWidth: "300px" }} border="5" />
           <h4><b>Name:</b> {this.state[profileToLoad].firstname}</h4>
 
           <h5><b>Location:</b> {this.state[profileToLoad].location}</h5>
@@ -536,11 +601,11 @@ class Home extends Component {
       Storage.list(`${matchId}/`) // for listing ALL files without prefix, pass '' instead
         .then(async result => {
 
-          console.log('result.key' + result[0].key)
-
-          const signedURL = await Storage.get(result[0].key); // get key from Storage.list
-
-          console.log('signedURL: ' + signedURL);
+          let signedURL = null;
+          if (result.length > 0) {
+            console.log('result.key' + result[0].key)
+            signedURL = await Storage.get(result[0].key); // get key from Storage.list
+          }
           currentComponent.setState({
             selectedmatchProfileImage: signedURL
           });
@@ -609,9 +674,6 @@ class Home extends Component {
   renderMatchesForRace(race) {
     const cardStyle = { wordWrap: 'break-word', borderRadius: "5px", padding: '25px' };
     if (this.state.matchesLoading === false) {
-
-      console.log('race; ' + race);
-      console.log('this.state.matches[race]: ' + JSON.stringify(this.state.matches[race]))
       
       if (this.state.matches && this.state.matches[race] && this.state.matches[race].length > 0) {
         let matchesForRace = [];
@@ -619,17 +681,14 @@ class Home extends Component {
         for (const match of this.state.matches[race]) {
           matchesForRace.push(
             <Card id={match.runnerid} key={match.runnerid + i} shadow={0} style={cardStyle} onClick={this.open}>
-              {/* <Button  onClick={this.open}> */}
   
-              <h5><b>Runner</b>: {match.runnerid}</h5>
-  
-              <h5><b>Time</b>: {getNiceTime(match.time)}</h5>
-              <h5><b>Location</b>: {match.location}</h5>
-  
-              <h5><b>Date:</b> {match.date}</h5>
-  
-              <h5><b>Link</b>: <a href={match.link}>race link</a></h5>
-              {/* </Button> */}
+              <h5>{match.runnerid}
+              <hr/>
+              <b>Race Time</b>: {getNiceTime(match.time)} - ({RACE_MAP[match.race]})<br/>
+              <b>Race Date:</b> {match.date}<br/>
+
+              <b>Location</b>: {match.location}<br/>
+              <b>Link</b>: <a href={match.link}>race link</a></h5>
   
             </Card>
           );
