@@ -352,7 +352,7 @@ class Home extends Component {
               type="text"
               value={this.state.userTimes[race].time}
               onChange={this.handleChange} />
-          </label><br />
+          </label>
           <label>
             <b>Date:</b><br />
             <input
@@ -362,7 +362,7 @@ class Home extends Component {
               type="date"
               value={this.state.userTimes[race].date}
               onChange={this.handleChange} />
-          </label><br />
+          </label>
           <label>
             <b>Race Time Link:</b><br />
             <input
@@ -373,7 +373,7 @@ class Home extends Component {
 
               value={this.state.userTimes[race].link}
               onChange={this.handleChange} />
-          </label><br />
+          </label>
           <button id={race} key={race} onClick={this.saveRaceTime} >Save</button>
           {this.state.userTimes[race].timeid ? <button id={race} key={race} onClick={this.deleteRaceTime} >Delete</button> : <></>}
 
@@ -484,44 +484,42 @@ class Home extends Component {
             </label>
           </div>
 
-          <h5><b>5k Time</b></h5>
+          <b> Contact Info</b>
+
+          <label>
+            Phone Number:<br />
+            <input
+              className="rounded"
+              name="phone"
+              type="phone"
+              value={this.state.signedInRunner.phone}
+              onChange={this.handleChange} />
+          </label>
+
+          <label>
+            Email:<br />
+            <input
+              className="rounded"
+              name="phone"
+              type="phone"
+              value={this.state.signedInRunner.email}
+              onChange={this.handleChange} />
+          </label>
+
+
+          <b>5k Time</b>
           {this.renderRaceTime('fivek')}
 
 
-          <h5><b>10K Time</b></h5>
+          <b>10K Time</b>
           {this.renderRaceTime('tenk')}
 
-          <h5><b>1/2 Marathon Time</b></h5>
+          <b>1/2 Marathon Time</b>
           {this.renderRaceTime('halfmarathon')}
 
 
-          <h5><b> Marathon Time</b></h5>
+          <b> Marathon Time</b>
           {this.renderRaceTime('marathon')}
-
-          <h5><b> Contact Info</b></h5>
-          <ul>
-
-            <label>
-              <b>Phone Number:</b><br />
-              <input
-                className="rounded"
-                name="phone"
-                type="phone"
-                value={this.state.signedInRunner.phone}
-                onChange={this.handleChange} />
-            </label><br />
-
-            <label>
-              <b>Email:</b><br />
-              <input
-                className="rounded"
-                name="phone"
-                type="phone"
-                value={this.state.signedInRunner.email}
-                onChange={this.handleChange} />
-            </label><br />
-
-          </ul>
 
           <Button style={{ background: 'grey' }} onClick={this.save}>Save</Button>
 
@@ -531,9 +529,9 @@ class Home extends Component {
   }
 
   getDisplayRaceTimes(race) {
-    if (this.state.selectedmatchTimesLoading === false) {
+    if (this.state.selectedmatchTimesLoading === false && this.state.selectedmatchTimes[race].date && this.state.selectedmatchTimes[race].time) {
       return (
-        <li> {this.state.selectedmatchTimes[race].date} - {this.state.selectedmatchTimes[race].time}</li>
+         <>{this.state.selectedmatchTimes[race].time} (date: {this.state.selectedmatchTimes[race].date})</>
       );
     }
     return (<></>);
@@ -548,40 +546,32 @@ class Home extends Component {
       return (
         <Card shadow={0} style={cardStyle}>
           <img src={this.state.selectedmatchProfileImage !== null ? this.state.selectedmatchProfileImage : placeholderImage} alt="profile" style={{ maxWidth: "300px" }} border="5" />
-          <h4><b>Name:</b> {this.state[profileToLoad].firstname}</h4>
+          <b>Name:</b> {this.state[profileToLoad].firstname}<br/><br/>
 
-          <h5><b>Location:</b> {this.state[profileToLoad].location}</h5>
+          <b>Location:</b> {this.state[profileToLoad].location}<br/><br/>
 
-          <h5><b>Birthday:</b> {this.state[profileToLoad].birthday}</h5>
+          <b>Birthday:</b> {this.state[profileToLoad].birthday}<br/><br/>
 
-          <h5><b>Gender:</b> {this.state[profileToLoad].gender ? (this.state[profileToLoad].gender === 1 ? "Woman" : "Man") : <></>}</h5>
+          <b>Gender:</b> {this.state[profileToLoad].gender ? (this.state[profileToLoad].gender === 1 ? "Woman" : "Man") : <></>}<br/><br/>
 
-          <h5><b>5k Times</b></h5>
+          <b>5k Time</b>
+          {this.getDisplayRaceTimes('fivek')}<br/><br/>
+
+          <b>10K Time</b>
+          {this.getDisplayRaceTimes('tenk')}<br/><br/>
+
+
+          <b>Half Marathon Time</b>
+          {this.getDisplayRaceTimes('halfmarathon')}<br/><br/>
+
+          <b> Marathon Time</b>
+          {this.getDisplayRaceTimes('marathon')}<br/><br/>
+
+
+          <b> Contact Info</b>
           <ul>
-            {this.getDisplayRaceTimes('fivek')}
-          </ul>
-
-
-          <h5><b>10K Times</b></h5>
-          <ul>
-            {this.getDisplayRaceTimes('tenk')}
-          </ul>
-
-
-          <h5><b>1/2 Marathon Times</b></h5>
-          <ul>
-            {this.getDisplayRaceTimes('halfmarathon')}
-          </ul>
-
-          <h5><b> Marathon Times</b></h5>
-          <ul>
-            {this.getDisplayRaceTimes('marathon')}
-          </ul>
-
-          <h5><b> Contact Info</b></h5>
-          <ul>
-            <li>phone number: {this.state[profileToLoad].phone}</li>
-            <li>email: {this.state[profileToLoad].email}</li>
+            <li><u>phone number</u>: {this.state[profileToLoad].phone}</li>
+            <li><u>email</u>: {this.state[profileToLoad].email}</li>
           </ul>
         </Card>
       )
