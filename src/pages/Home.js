@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 
 import { Auth, Storage } from 'aws-amplify';
 import { getNiceTime, getSecondsFromTimeString } from '../helpers/TimeHelper';
+import { getDistanceFromLatLonInKm } from '../helpers/LocationHelper';
 
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -102,7 +103,82 @@ class Home extends Component {
             signedInRunner: runnerBody,
             signedInRunnerProfileLoading: false
           }, () => {
+
+
+            // get location
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition((position) => {
+                
+                // if not set for runner yet
+                if (!Object.keys(runnerBody).includes('coordinates')) {
+                  runnerBody['coordinates'] = `${position.coords.latitude}#${position.coords.longitude}`;
+                  // get location string
+                  unirest.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`)
+                  .header('Accept', 'application/json')
+                  .end(function (res) {
+                    const locationResponse = JSON.parse(res.raw_body);
+                    const cityStateString = `${locationResponse.city}, ${locationResponse.principalSubdivision}`;
+                    runnerBody['location'] = cityStateString;
+                    
+                    console.log('updating runner with coords');
+                    console.log(JSON.stringify(runnerBody));
+                    currentComponent.setState({
+                      signedInRunner: runnerBody
+                    }, () => {
+                      currentComponent.save(false);
+                    });
+                  });
+                } else {
+                  // is set for runner... see if moved
+                  const currLat = position.coords.latitude;
+                  const currLon = position.coords.longitude;
+
+                  const oldLat = runnerBody.coordinates.split("#")[0];
+                  const oldLon = runnerBody.coordinates.split("#")[1];
+
+                  const movedDist = getDistanceFromLatLonInKm(currLat, currLon, oldLat, oldLon);
+                  if (movedDist > 5.0) {
+                    if (window.confirm('Looks like you moved, do you want to update your location?')) {
+                      
+                      runnerBody['coordinates'] = `${position.coords.latitude}#${position.coords.longitude}`;
+                      // get location string
+                      unirest.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`)
+                      .header('Accept', 'application/json')
+                      .end(function (res) {
+                        const locationResponse = JSON.parse(res.raw_body);
+                        const cityStateString = `${locationResponse.city}, ${locationResponse.principalSubdivision}`;
+                        runnerBody['location'] = cityStateString;
+                        
+                        console.log('updating runner with coords');
+                        console.log(JSON.stringify(runnerBody));
+                        currentComponent.setState({
+                          signedInRunner: runnerBody
+                        }, () => {
+                          currentComponent.save(false);
+                        });
+                      });
+
+                      alert(`Ok, we updated your location, you'll start receiving matches in your new location now!`);
+
+                    } else {
+                      alert(`Ok, we'll keep your same location.`);
+                    }
+                  }
+
+
+                }
+
+
+
+                
+
+              });
+            }
+
+       ///////////
+
             if (!Object.keys(runnerBody).includes('coordinates')) {
+
               if (navigator.geolocation) {
   
                 navigator.geolocation.getCurrentPosition((position) => {
@@ -237,6 +313,7 @@ class Home extends Component {
       "gender": this.state.signedInRunner.gender,
       "coordinates": this.state.signedInRunner.coordinates,
       "birthday": this.state.signedInRunner.birthday,
+      "message": this.state.signedInRunner.message
     }
 
     console.log("SAVE RUNNER: " + JSON.stringify(runner));
@@ -374,9 +451,14 @@ class Home extends Component {
               value={this.state.userTimes[race].link}
               onChange={this.handleChange} />
           </label>
-          <button id={race} key={race} onClick={this.saveRaceTime} >Save</button>
-          {this.state.userTimes[race].timeid ? <button id={race} key={race} onClick={this.deleteRaceTime} >Delete</button> : <></>}
-
+          <Row>
+          <Col>
+          <button style={{width: '100%', padding: '5px'}} id={race} key={race} onClick={this.saveRaceTime} >Save</button>
+          </Col>
+          <Col>
+          {this.state.userTimes[race].timeid ? <button style={{width: '100%', padding: '5px'}} id={race} key={race} onClick={this.deleteRaceTime} >Delete</button> : <></>}
+          </Col>
+          </Row>
         </Card>);
 
     } else {
@@ -394,7 +476,7 @@ class Home extends Component {
 
     console.log(event.target);
 
-    const updatingRunner = ['location', 'firstname', 'email', 'phone', 'gender', 'coordinates', 'birthday'].includes(name);
+    const updatingRunner = ['message','location', 'firstname', 'email', 'phone', 'gender', 'coordinates', 'birthday'].includes(name);
     if (updatingRunner) {
       console.log('udpating runner: ' + name);
       const runner = this.state.signedInRunner;
@@ -428,13 +510,23 @@ class Home extends Component {
     if (this.state.profilePicLoading === false && this.state.signedInRunnerProfileLoading === false && this.state.userTimesLoading === false) {
 
       return (
-        <Card shadow={0} style={cardStyle}>
+        <Card shadow={0} style={cardStyle} >
 
-          <img src={this.state.signedInRunnerProfilePic} alt="Illinois Matahon 2018" style={{ maxWidth: "300px" }} border="5" />
+          <img src={this.state.signedInRunnerProfilePic} alt="profile" style={{ maxWidth: "300px" }} border="5" />
           <input
             type="file"
             onChange={this.imageUpdload}
           />
+
+          <label>
+            <b>Message:</b><br />
+            <textarea
+              className="rounded"
+              name="message"
+              type="text"
+              value={this.state.signedInRunner.message}
+              onChange={this.handleChange} />
+          </label>
 
           <label>
             <b>Name:</b><br />
@@ -508,18 +600,17 @@ class Home extends Component {
 
 
           <b>5k Time</b>
-          {this.renderRaceTime('fivek')}
-
+          {this.renderRaceTime('fivek')}<br />
 
           <b>10K Time</b>
-          {this.renderRaceTime('tenk')}
+          {this.renderRaceTime('tenk')}<br />
 
           <b>1/2 Marathon Time</b>
-          {this.renderRaceTime('halfmarathon')}
+          {this.renderRaceTime('halfmarathon')}<br />
 
 
           <b> Marathon Time</b>
-          {this.renderRaceTime('marathon')}
+          {this.renderRaceTime('marathon')}<br />
 
           <Button style={{ background: 'grey' }} onClick={this.save}>Save</Button>
 
@@ -540,12 +631,16 @@ class Home extends Component {
 
 
   renderProfile(profileToLoad) {
-    const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
+    const cardStyle = { borderWidth: '5px', borderRadius: "5px", padding: '15px' };
 
     if (this.state[profileToLoad]) {
       return (
+
         <Card shadow={0} style={cardStyle}>
           <img src={this.state.selectedmatchProfileImage !== null ? this.state.selectedmatchProfileImage : placeholderImage} alt="profile" style={{ maxWidth: "300px" }} border="5" />
+
+          {this.state[profileToLoad].message ? <><b>Message:</b> {this.state.signedInRunner.message}</> : <></>}
+
           <b>Name:</b> {this.state[profileToLoad].firstname}<br/><br/>
 
           <b>Location:</b> {this.state[profileToLoad].location}<br/><br/>
@@ -576,13 +671,13 @@ class Home extends Component {
         </Card>
       )
     } else {
-      return (<Card> </Card>);
+      return (<Card> No match selected </Card>);
     }
   }
 
-  open(event) {
+  open(runnerid, event) {
     let currentComponent = this;
-    const matchId = event.target.id;
+    const matchId = runnerid;
 
     if (matchId !== "") {
 
@@ -662,7 +757,7 @@ class Home extends Component {
   }
 
   renderMatchesForRace(race) {
-    const cardStyle = { wordWrap: 'break-word', borderRadius: "5px", padding: '25px' };
+    const cardStyle = { wordWrap: 'break-word', borderRadius: "5px", paddingTop: '15px', paddingLeft: '15px', paddingRight: '15px', paddingBottom: '15px' };
     if (this.state.matchesLoading === false) {
       
       if (this.state.matches && this.state.matches[race] && this.state.matches[race].length > 0) {
@@ -670,24 +765,27 @@ class Home extends Component {
         let i = 0;
         for (const match of this.state.matches[race]) {
           matchesForRace.push(
-            <Card id={match.runnerid} key={match.runnerid + i} shadow={0} style={cardStyle} onClick={this.open}>
+            <div key={match.runnerid + i} onClick={(e) => this.open(match.runnerid, e)}>
+            <Card className="cardclasshover" shadow={0} style={cardStyle} >
   
-              <h5>{match.runnerid}
+              <p><b>{match.runnerid}</b>
               <hr/>
-              <b>Race Time</b>: {getNiceTime(match.time)} - ({RACE_MAP[match.race]})<br/>
+              <b>Race Time:</b> {getNiceTime(match.time)} - ({RACE_MAP[match.race]})<br/>
               <b>Race Date:</b> {match.date}<br/>
 
-              <b>Location</b>: {match.location}<br/>
-              <b>Link</b>: <a href={match.link}>race link</a></h5>
-  
+              <b>Location:</b> {match.location}<br/>
+              <b>Link:</b> <a href={match.link}>race link</a>
+              </p>  
             </Card>
+            </div >
+
           );
   
           i += 1;
         }
         return (matchesForRace);
       } else {
-        return (<></>);
+        return (<p>no matches yet</p>);
       }
 
     } else {

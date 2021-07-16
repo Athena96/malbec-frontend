@@ -136,13 +136,17 @@ a:active {
     /* Same as the width of the sidenav */
     font-family: "Helvetica Neue";
     margin: auto;
-
     padding-top: 25px;
     padding-bottom: 25px;
 }
 
 .indent {
-    padding-top: 25px;
+    padding-top: 50px;
+    padding-bottom: 25px;
+}
+
+.profileIndent {
+    padding-top: 50px;
     padding-bottom: 25px;
 }
 
@@ -300,6 +304,14 @@ height: 100px; */
 .floatLeft {
     clear: both;
     float: left;
+}
+
+.cardclasshover:hover {
+    background-color: lightgray;
+}
+
+.cardclasshover {
+    border-radius: '5px';
 }
 
 .subscribeButton {

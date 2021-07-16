@@ -83,16 +83,10 @@ class Profile extends Component {
             const runnerBody = JSON.parse(res.raw_body);
 
             currentComponent.setState({
-              firstname: runnerBody.firstname,
-              location: runnerBody.location,
-              runnerid: runnerBody.runnerid,
-              coordinates: runnerBody.coordinates,
-              gender: runnerBody.gender,
-              birthday: runnerBody.birthday,
-              phone: runnerBody.phone,
-              email: runnerBody.email,
-              runnerLoading: false
+              signedInRunner: runnerBody,
+              signedInRunnerProfileLoading: false
             });
+
             if (res.error) {
               alert("Your subscription request failed, please try again later.");
               return
@@ -145,56 +139,22 @@ class Profile extends Component {
     return rows.length > 0 ? rows : null;
   }
 
-
-
-  save() {
-    console.log("save");
-
-    const runner = {
-      "location": this.state.location,
-      "firstname": this.state.firstname,
-      "runnerid": this.state.runnerid,
-      "email": this.state.email,
-      "phone": this.state.phone,
-      "gender": this.state.gender,
-      "coordinates": this.state.coordinates,
-      "birthday": this.state.birthday,
-      "profilepic": this.state.profileImage
-    }
-
-
-    var unirest = require("unirest");
-    unirest.put(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners`)
-      .header('Accept', 'application/json')
-      .send(JSON.stringify(runner))
-      .end(function (res) {
-        if (res.error) {
-          alert("Your subscription request failed, please try again later.");
-          return
-        }
-
-        alert("Saved your runner profile!");
-
-        console.log(res.raw_body);
-        return
-      });
-
-  }
-
-
   renderUserProfile() {
-    const cardStyle = { borderWidth: '5px', borderRadius: "5px", margin: '10px', marginBottom: '10px', padding: '25px' };
+    const cardStyle = { borderWidth: '5px', borderRadius: "5px", padding: '15px' };
       if (this.state && this.state.profileImage) {
           return (
                 <Card shadow={0} style={cardStyle}>
                 <img src={this.state.profileImage} alt="profile" style={{ maxWidth: "300px" }} border="5" />
-                <h4><b>Name:</b> {this.state.firstname}</h4>
+                
+                {this.state.signedInRunner.message ? <h5><b>Message:</b> {this.state.signedInRunner.message}</h5> : <></>}
 
-                <h5><b>location:</b> {this.state.location}</h5>
+                <h5><b>Name:</b> {this.state.signedInRunner.firstname}</h5>
 
-                <h5><b>birthday:</b> {this.state.birthday}</h5>
+                <h5><b>Location:</b> {this.state.signedInRunner.location}</h5>
 
-                <h5><b>gender:</b> {this.state.gender ? (this.state.gender === 1 ? "Woman" : "Man") : <></> }</h5>
+                <h5><b>Birthday:</b> {this.state.signedInRunner.birthday}</h5>
+
+                <h5><b>Gender:</b> {this.state.signedInRunner.gender ? (this.state.signedInRunner.gender === 1 ? "Woman" : "Man") : <></> }</h5>
 
                 <h5><b>5k Times</b></h5>
                 <ul>
@@ -220,8 +180,8 @@ class Profile extends Component {
 
                 <h5><b> Contact Info</b></h5>
                 <ul>
-                    <li>phone number: {this.state.phone}</li>
-                    <li>email: {this.state.email}</li>
+                    <li>phone number: {this.state.signedInRunner.phone}</li>
+                    <li>email: {this.state.signedInRunner.email}</li>
                 </ul>
                 </Card>
           )
@@ -233,8 +193,18 @@ class Profile extends Component {
   render() {
 
     return (
-      <div>
+      <div className="profileIndent">
+
+<Container>
+          <Row>
+            <Col>
         {this.renderUserProfile()}
+        </Col>
+
+
+</Row>
+
+</Container>
       </div>
     );
 
