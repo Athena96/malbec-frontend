@@ -104,6 +104,8 @@ class App extends Component {
           <Navbar.Collapse id="responsive-navbar-nav">
           
           <Nav className="mr-auto">
+            <Nav.Link href="/edit">Edit Profile</Nav.Link>
+
             <Nav.Link onClick={this.signOut}><b>Sign Out</b></Nav.Link>
 
           </Nav>
