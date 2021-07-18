@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useRef } from 'react';
 import '../App.css';
 
 import { Card, Button, List, ListItem, ListItemAction, ListItemContent } from 'react-mdl';
@@ -36,6 +36,7 @@ class Home extends Component {
     this.renderMatchesForRace = this.renderMatchesForRace.bind(this);
     this.open = this.open.bind(this);
     this.save = this.save.bind(this);
+    this.myRef = React.createRef()  
   }
 
   handleResize(e) {
@@ -321,6 +322,7 @@ class Home extends Component {
   open(match) {
     let currentComponent = this;
     if (match) {
+      this.myRef.current.scrollIntoView();
       const matchId = match.runnerid;
 
       currentComponent.setState({
@@ -494,7 +496,7 @@ class Home extends Component {
             </Col>
 
             <Col>
-              <h3><b>Selected Match</b></h3>
+              <h3 ref={this.myRef}><b>Selected Match</b></h3>
               {this.renderProfile('selectedmatch')}
             </Col>
           </Row>
