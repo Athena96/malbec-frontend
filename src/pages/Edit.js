@@ -578,8 +578,6 @@ class Edit extends Component {
                             onChange={this.handleChange} />
                     </label>
 
-
-                    <hr/>
                     <b>5k Time</b>
                     {this.renderRaceTime('fivek')}<br />
 

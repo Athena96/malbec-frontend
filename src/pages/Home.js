@@ -282,7 +282,7 @@ class Home extends Component {
 
         <Card shadow={0} style={cardStyle}>
           <img src={this.state.selectedmatchProfileImage !== null ? this.state.selectedmatchProfileImage : placeholderImage} alt="profile" style={{ maxWidth: "300px", borderRadius: "5px", }} border="5" />
-
+          <br />
           {this.state[profileToLoad].message ? <><b>Message</b> {this.state[profileToLoad].message}</> : <></>}
 
           <br /><br /><b>Name</b> {this.state[profileToLoad].firstname}<br /><br />
@@ -291,27 +291,25 @@ class Home extends Component {
 
           <b>Birthday</b> {this.state[profileToLoad].birthday}<br /><br />
 
-          <b>Gender</b> {this.state[profileToLoad].gender ? (this.state[profileToLoad].gender === 1 ? "Woman" : "Man") : <></>}<br /><br />
-
-          <b>5k Time</b>
-          {this.getDisplayRaceTimes('fivek')}<br /><br />
-
-          <b>10K Time</b>
-          {this.getDisplayRaceTimes('tenk')}<br /><br />
-
-
-          <b>Half Marathon Time</b>
-          {this.getDisplayRaceTimes('halfmarathon')}<br /><br />
-
-          <b> Marathon Time</b>
-          {this.getDisplayRaceTimes('marathon')}<br /><br />
-
-
           <b> Contact Info</b>
           <ul>
             <li><u>phone number</u>: {this.state[profileToLoad].phone}</li>
             <li><u>email</u>: {this.state[profileToLoad].email}</li>
           </ul>
+
+          <hr/>
+
+          <b>5k Time</b>
+          {this.getDisplayRaceTimes('fivek')}<br />
+
+          <b>10K Time</b>
+          {this.getDisplayRaceTimes('tenk')}<br />
+
+          <b>Half Marathon Time</b>
+          {this.getDisplayRaceTimes('halfmarathon')}<br />
+
+          <b> Marathon Time</b>
+          {this.getDisplayRaceTimes('marathon')}<br />
         </Card>
       )
     } else {
