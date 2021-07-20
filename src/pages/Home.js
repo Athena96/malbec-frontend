@@ -432,14 +432,14 @@ class Home extends Component {
             <div key={match.runnerid + i} onClick={(e) => this.open(match)}>
               <ListItem className="cardclasshover" threeLine>
 
-                {match.profileImageUrl != null ? 
-                <><img src={match.profileImageUrl} alt="profile" style={content} border="5" /></>:
-                <><img src={placeholderImage} alt="profile" style={content} border="5" /></>}
-
+               
   
                 <ListItemContent subtitle={<><b>Race Time</b><br /> {getNiceTime(match.time)} - ({RACE_MAP[match.race]})</>}>
                   {match.runnerid}              
                 </ListItemContent>
+                {match.profileImageUrl != null ? 
+                <><img src={match.profileImageUrl} alt="profile" style={content} border="5" /></>:
+                <><img src={placeholderImage} alt="profile" style={content} border="5" /></>}
 
 
               </ListItem >

@@ -60,7 +60,9 @@ width: 60%;
 */
 
 .color-nav {
-    background-color: rgb(51, 51, 51);
+    /* background-color: rgb(0, 199, 56); */
+    background-color: rgb(0, 190, 120);
+
 }
 
 #nav-dropdown {
@@ -134,7 +136,8 @@ a:active {
 
 .main {
     /* Same as the width of the sidenav */
-    font-family: "Helvetica Neue";
+    font-family: "Helvetica Neue"; 
+color: rgb(57, 80, 79);
     margin: auto;
     padding-top: 25px;
     padding-bottom: 25px;
@@ -166,7 +169,8 @@ a:active {
 
 .mainCenter {
     /* Same as the width of the sidenav */
-    font-family: "Helvetica Neue";
+    font-family: "Helvetica Neue"; 
+color: rgb(57, 80, 79);
     text-align: justify;
     padding-left: 16px;
     padding-right: 10px;
@@ -180,7 +184,8 @@ a:active {
 
 .blogs {
     /* Same as the width of the sidenav */
-    font-family: "Helvetica Neue";
+    font-family: "Helvetica Neue"; 
+color: rgb(57, 80, 79);
     padding-left: 52px;
     padding-right: 52px;
     padding-top: 22px;
@@ -188,45 +193,55 @@ a:active {
 }
 
 .main h1 {
-    font-family: "Helvetica Neue";
+    font-family: "Helvetica Neue"; 
+color: rgb(57, 80, 79);
 }
 
 .blogs h1 {
-    font-family: "Helvetica Neue";
+    font-family: "Helvetica Neue"; 
+color: rgb(57, 80, 79);
 }
 
 .main h2 {
-    font-family: "Helvetica Neue";
+    font-family: "Helvetica Neue"; 
+color: rgb(57, 80, 79);
 }
 
 .blogs h2 {
-    font-family: "Helvetica Neue";
+    font-family: "Helvetica Neue"; 
+color: rgb(57, 80, 79);
 }
 
 .main h3 {
-    font-family: "Helvetica Neue";
+    font-family: "Helvetica Neue"; 
+color: rgb(57, 80, 79);
 }
 
 .blogs h3 {
-    font-family: "Helvetica Neue";
+    font-family: "Helvetica Neue"; 
+color: rgb(57, 80, 79);
 }
 
 .main h4 {
-    font-family: "Helvetica Neue";
+    font-family: "Helvetica Neue"; 
+color: rgb(57, 80, 79);
 }
 
 .blogs h4 {
-    font-family: "Helvetica Neue";
+    font-family: "Helvetica Neue"; 
+color: rgb(57, 80, 79);
 }
 
 .main p {
     font-size: large;
-    font-family: "Helvetica Neue";
+    font-family: "Helvetica Neue"; 
+color: rgb(57, 80, 79);
 }
 
 .blogs p {
     font-size: large;
-    font-family: "Helvetica Neue";
+    font-family: "Helvetica Neue"; 
+color: rgb(57, 80, 79);
 }
 
 .favorites_li {

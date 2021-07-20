@@ -99,7 +99,7 @@ class App extends Component {
       <div className="main">
 
         <Navbar className="color-nav" variant="dark" fixed="top"  collapseOnSelect expand="lg">
-          <Navbar.Brand href="/home">AppName</Navbar.Brand>
+          <Navbar.Brand href="/home">Pack Finder</Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
           
