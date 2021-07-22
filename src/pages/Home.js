@@ -35,6 +35,7 @@ class Home extends Component {
     this.componentDidMount = this.componentDidMount.bind(this);
     this.renderMatchesForRace = this.renderMatchesForRace.bind(this);
     this.open = this.open.bind(this);
+    this.openDetail = this.openDetail.bind(this);
     this.save = this.save.bind(this);
     this.myRef = React.createRef()  
   }
@@ -49,6 +50,8 @@ class Home extends Component {
   }
 
   componentDidMount() {
+    window.addEventListener("resize", this.handleResize);
+
     var currentComponent = this;
 
     // 1. get current signed in runnerid
@@ -419,8 +422,14 @@ class Home extends Component {
       });
   }
 
-  renderMatchesForRace(race) {
-    const content = { borderRadius: '5px', width: '25%', marginRight:'10px' };
+  openDetail(match) {
+    console.log(JSON.stringify(match));
+    this.props.history.push('/profile/' + match.runnerid);
+  }
+
+  renderMatchesForRace(race, isMobile) {
+    console.log('isMobile: ' + isMobile);
+    const content = { borderRadius: '40px',  height: '85px', width: '85px', display: 'block', marginLeft:'auto', marginRight: 'auto'};
     if (this.state.matchesLoading === false) {
 
       if (this.state.matches && this.state.matches[race] && this.state.matches[race].length > 0) {
@@ -428,25 +437,46 @@ class Home extends Component {
         let i = 0;
         for (const match of this.state.matches[race]) {
 
-          matchesForRace.push(
-            <div key={match.runnerid + i} onClick={(e) => this.open(match)}>
-              <ListItem className="cardclasshover" threeLine>
-
-               
+          if (isMobile) {
+            matchesForRace.push(
+              <div key={match.runnerid + i} onClick={(e) => this.openDetail(match)}>
+                <ListItem className="cardclasshover" threeLine>
   
-                <ListItemContent subtitle={<><b>Race Time</b><br /> {getNiceTime(match.time)} - ({RACE_MAP[match.race]})</>}>
-                  {match.runnerid}              
-                </ListItemContent>
-                {match.profileImageUrl != null ? 
-                <><img src={match.profileImageUrl} alt="profile" style={content} border="5" /></>:
-                <><img src={placeholderImage} alt="profile" style={content} border="5" /></>}
+                  <ListItemContent style={{maxWidth: '50%', wordWrap: 'break-word'}} subtitle={<><b>Race Time</b><br /> {getNiceTime(match.time)} - ({RACE_MAP[match.race]})</>}>
+                    {match.runnerid.split('@')[0]}              
+                  </ListItemContent>
+                  
+
+                  {match.profileImageUrl != null ? 
+                  <><img src={match.profileImageUrl} alt="profile" style={content}  /></>:
+                  <><img src={placeholderImage} alt="profile" style={content}  /></>}
 
 
-              </ListItem >
-
-            </div >
-
-          );
+                </ListItem >
+  
+              </div >
+  
+            );
+          } else {
+            matchesForRace.push(
+              <div key={match.runnerid + i} onClick={(e) => this.open(match)}>
+                <ListItem className="cardclasshover" threeLine>
+  
+                  <ListItemContent subtitle={<><b>Race Time</b><br /> {getNiceTime(match.time)} - ({RACE_MAP[match.race]})</>}>
+                    {match.runnerid}              
+                  </ListItemContent>
+                  {match.profileImageUrl != null ? 
+                  <><img src={match.profileImageUrl} alt="profile" style={content} border="5" /></>:
+                  <><img src={placeholderImage} alt="profile" style={content} border="5" /></>}
+  
+  
+                </ListItem >
+  
+              </div >
+  
+            );
+          }
+          
 
           i += 1;
         }
@@ -472,35 +502,66 @@ class Home extends Component {
   }
 
   render() {
-    return (
-      <div className="indent">
+    const { windowWidth } = this.state;
+    const isMobile = windowWidth <= 375;
+    if (!isMobile) {
+      return (
+        <div className="indent">
+  
+          <Container>
+            <Row>
+              <Col>
+                <h3><b>My Matches</b></h3>
+  
+                <h5><b>5k Matches</b></h5>
+                {this.renderMatchesForRace('fivek', isMobile)}
+  
+                <h5><b>10K Matches</b></h5>
+                {this.renderMatchesForRace('tenk', isMobile)}
+  
+                <h5><b>1/2 Marathon Matches</b></h5>
+                {this.renderMatchesForRace('halfmarathon', isMobile)}
+  
+                <h5><b> Marathon Matches</b></h5>
+                {this.renderMatchesForRace('marathon', isMobile)}
+              </Col>
+  
+              <Col>
+                <h3 ref={this.myRef}><b>Selected Match</b></h3>
+                {this.renderProfile('selectedmatch')}
+              </Col>
+            </Row>
+          </Container>
+        </div>
+      );
+    } else {
+      return (
+        <div className="indent">
+  
+          <Container>
+            <Row>
+              <Col>
+                <h3><b>My Matches</b></h3>
+  
+                <h5><b>5k Matches</b></h5>
+                {this.renderMatchesForRace('fivek', isMobile)}
+  
+                <h5><b>10K Matches</b></h5>
+                {this.renderMatchesForRace('tenk', isMobile)}
+  
+                <h5><b>1/2 Marathon Matches</b></h5>
+                {this.renderMatchesForRace('halfmarathon', isMobile)}
+  
+                <h5><b> Marathon Matches</b></h5>
+                {this.renderMatchesForRace('marathon', isMobile)}
+              </Col>
 
-        <Container>
-          <Row>
-            <Col>
-              <h3><b>My Matches</b></h3>
-
-              <h5><b>5k Matches</b></h5>
-              {this.renderMatchesForRace('fivek')}
-
-              <h5><b>10K Matches</b></h5>
-              {this.renderMatchesForRace('tenk')}
-
-              <h5><b>1/2 Marathon Matches</b></h5>
-              {this.renderMatchesForRace('halfmarathon')}
-
-              <h5><b> Marathon Matches</b></h5>
-              {this.renderMatchesForRace('marathon')}
-            </Col>
-
-            <Col>
-              <h3 ref={this.myRef}><b>Selected Match</b></h3>
-              {this.renderProfile('selectedmatch')}
-            </Col>
-          </Row>
-        </Container>
-      </div>
-    );
+            </Row>
+          </Container>
+        </div>
+      );
+    }
+    
   }
 }
 

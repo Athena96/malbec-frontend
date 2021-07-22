@@ -5,6 +5,7 @@ import { Card, Button } from 'react-mdl';
 import { Auth, Storage } from 'aws-amplify';
 
 import { Link } from "react-router-dom";
+import { getNiceTime, getSecondsFromTimeString } from '../helpers/TimeHelper';
 
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -96,28 +97,38 @@ class Profile extends Component {
             return
           });
 
-
-        unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${this.state.runnerid}`)
+          unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${this.state.runnerid}`)
           .header('Accept', 'application/json')
-          //   .send(JSON.stringify(objToSending))
           .end(function (res) {
-            console.log(res.raw_body);
-
+  
+            // create map format
             const timesBody = JSON.parse(res.raw_body);
-            console.log(timesBody);
+            const timesBodyMap = {}
+            for (const time of timesBody) {
+              const race = time.race;
+              time.time = getNiceTime(time.time);
+              timesBodyMap[race] = time;
+            }
+  
+            const raceTypes = ['fivek', 'tenk', 'halfmarathon', 'marathon'];
+            const raceTimesObj = {}
+            for (const race of raceTypes) {
+              if (timesBodyMap[race]) {
+                raceTimesObj[race] = timesBodyMap[race];
+              } else {
+                raceTimesObj[race] = {}
+              }
+            }
+            console.log("raceTimesObj: " + JSON.stringify(raceTimesObj));
             currentComponent.setState({
-              times: timesBody,
-              timesLoading: false
-
+              selectedmatchTimes: raceTimesObj,
+              selectedmatchTimesLoading: false,
             });
-
+  
             if (res.error) {
-              alert("Your subscription request failed, please try again later.");
+              alert("failed to get times");
               return
             }
-            console.log(res.raw_body);
-
-            // alert(JSON.stringify(currentComponent.state));
             return
           });
   }
@@ -127,34 +138,50 @@ class Profile extends Component {
   }
 
   getRaceTimes(race) {
-    const rows = [];
-    for (const time of this.state.times) {
-      if (time.race === race) {
-        rows.push(
-          <li> {time.date} - {time.time}</li>
+    // const rows = [];
+    // for (const time of this.state.times) {
+    //   if (time.race === race) {
+    //     rows.push(
+    //       <li> {time.date} - {time.time}</li>
 
-        );
-      }
+    //     );
+    //   }
+    // }
+    // return rows.length > 0 ? rows : null;
+
+    if (this.state.selectedmatchTimesLoading === false && this.state.selectedmatchTimes[race].date && this.state.selectedmatchTimes[race].time) {
+      return (
+        <a href={this.state.selectedmatchTimes[race].link} rel="noopener noreferrer" target="_blank" >{this.state.selectedmatchTimes[race].time} (date: {this.state.selectedmatchTimes[race].date})</a>
+      );
     }
-    return rows.length > 0 ? rows : null;
+    return (<></>);
+
   }
 
   renderUserProfile() {
     const cardStyle = { borderWidth: '5px', borderRadius: "5px", padding: '15px' };
-      if (this.state && this.state.profileImage) {
+      if (this.state && this.state.profileImage && this.state.signedInRunner) {
           return (
                 <Card shadow={0} style={cardStyle}>
                 <img src={this.state.profileImage} alt="profile" style={{ maxWidth: "300px" }} border="5" />
                 
                 {this.state.signedInRunner.message ? <h5><b>Message:</b> {this.state.signedInRunner.message}</h5> : <></>}
 
-                <h5><b>Name:</b> {this.state.signedInRunner.firstname}</h5>
 
-                <h5><b>Location:</b> {this.state.signedInRunner.location}</h5>
+                <b>Name</b> {this.state.signedInRunner.firstname}<br /><br />
 
-                <h5><b>Birthday:</b> {this.state.signedInRunner.birthday}</h5>
+                <b>Location</b> {this.state.signedInRunner.location}<br /><br />
 
-                <h5><b>Gender:</b> {this.state.signedInRunner.gender ? (this.state.signedInRunner.gender === 1 ? "Woman" : "Man") : <></> }</h5>
+                <b>Birthday</b> {this.state.signedInRunner.birthday}<br /><br />
+
+                <b> Contact Info</b>
+                <ul>
+                  <li><u>phone number</u>: {this.state.signedInRunner.phone}</li>
+                  <li><u>email</u>: {this.state.signedInRunner.email}</li>
+                </ul>
+                <hr/>
+
+
 
                 <h5><b>5k Times</b></h5>
                 <ul>

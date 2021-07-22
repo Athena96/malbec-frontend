@@ -429,12 +429,14 @@ class Edit extends Component {
       }
 
     renderRaceTime(race) {
-        const cardStyle = { padding: '15px' };
+        const cardStyle = { padding: '15px', borderRadius: '10px', backgroundColor: 'rgb(0, 190, 120, 0.15)', margin: '10px'};
+        const savebuttonStyle = {   borderRadius: '10px', border: 'solid black 1px', width: '100%',backgroundColor: 'rgb(0, 190, 120, 0.35)', paddingBottom: '10px' };
+        const delbuttonStyle = {   borderRadius: '10px', border: 'solid black 1px', width: '100%',backgroundColor: 'rgb(230, 230, 230)', paddingBottom: '10px' };
 
         if (this.state.userTimesLoading === false) {
             return (
-
-                <Card id={race} key={race} shadow={0} style={cardStyle}>
+                <div style={cardStyle}>
+                {/* <Card id={race} key={race} shadow={0} style={cardStyle}> */}
                     <label>
                         <b>Time</b><br />
                         <input
@@ -467,13 +469,15 @@ class Edit extends Component {
                     </label>
                     <Row>
                         <Col>
-                            <button style={{ width: '100%', padding: '5px' }} id={race} key={race} onClick={this.saveRaceTime} >Save</button>
+                            <Button style={savebuttonStyle} id={race} key={race} onClick={this.saveRaceTime} >Save Time</Button>
                         </Col>
                         <Col>
-                            {this.state.userTimes[race].timeid ? <button style={{ width: '100%', padding: '5px' }} id={race} key={race} onClick={this.deleteRaceTime} >Delete</button> : <></>}
+                            {this.state.userTimes[race].timeid ? <Button style={delbuttonStyle} id={race} key={race} onClick={this.deleteRaceTime} >Delete</Button> : <></>}
                         </Col>
                     </Row>
-                </Card>);
+                {/* </Card> */}
+                </div>
+                );
 
         } else {
             return (
@@ -580,7 +584,7 @@ class Edit extends Component {
 
                     <b>5k Time</b>
                     {this.renderRaceTime('fivek')}<br />
-
+                    
                     <b>10K Time</b>
                     {this.renderRaceTime('tenk')}<br />
 
@@ -591,7 +595,7 @@ class Edit extends Component {
                     <b> Marathon Time</b>
                     {this.renderRaceTime('marathon')}<br />
 
-                    <Button style={{ background: 'grey' }} onClick={this.save}>Save</Button>
+                    <Button style={{ backgroundColor: 'rgb(0, 190, 120)' }} onClick={this.save}>Save Profile</Button>
 
                 </Card>
             )
