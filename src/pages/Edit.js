@@ -11,6 +11,7 @@ import { getNiceTime, getSecondsFromTimeString } from '../helpers/TimeHelper';
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
+import placeholderImage from '../static/images/placeholder.png'
 
 
 class Edit extends Component {
@@ -93,7 +94,16 @@ class Edit extends Component {
                         signedInRunnerProfilePic: signedURL,
                         profilePicLoading: false
                     });
-                }).catch(err => console.log(err));
+                }).catch(err => {
+                    
+                    currentComponent.setState({
+                        signedInRunnerProfilePic: null,
+                        profilePicLoading: false
+                    });
+
+                    console.log(err)
+
+                });
 
             // 3. get their profile
             var unirest = require("unirest");
@@ -495,8 +505,10 @@ class Edit extends Component {
             return (
                 <Card shadow={0} style={cardStyle} >
 
-
-                    <img src={this.state.signedInRunnerProfilePic} alt="profile" style={{ maxWidth: "300px", borderRadius: '5px' }} border="5" /><br />
+        {this.state.signedInRunnerProfilePic != null ? 
+                  <><img src={this.state.signedInRunnerProfilePic} alt="profile" style={{ maxWidth: "300px", borderRadius: '5px' }} border="5" /><br /></>:
+                  <><img src={placeholderImage} alt="profile" style={{ maxWidth: "300px", borderRadius: '5px' }} border="5" /></>}
+  
                     <input
                         type="file"
 
