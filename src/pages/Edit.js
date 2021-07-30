@@ -107,7 +107,7 @@ class Edit extends Component {
 
             // 3. get their profile
             var unirest = require("unirest");
-            unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${signedInRunnerId}`)
+            unirest.get(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${signedInRunnerId}`)
                 .header('Accept', 'application/json')
                 .end(function (res) {
                     const runnerBody = JSON.parse(res.raw_body);
@@ -229,7 +229,7 @@ class Edit extends Component {
                 });
 
             // 4. get their race times
-            unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${signedInRunnerId}`)
+            unirest.get(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${signedInRunnerId}`)
                 .header('Accept', 'application/json')
                 .end(function (res) {
 
@@ -263,7 +263,7 @@ class Edit extends Component {
                     return
                 });
 
-            unirest.get(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/matches?runnerid=${signedInRunnerId}`)
+            unirest.get(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/matches?runnerid=${signedInRunnerId}`)
                 .header('Accept', 'application/json')
                 .end(function (res) {
                     const matches = JSON.parse(res.raw_body);
@@ -343,7 +343,7 @@ class Edit extends Component {
 
     console.log("SAVE RUNNER: " + JSON.stringify(runner));
     var unirest = require("unirest");
-    unirest.put(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/runners`)
+    unirest.put(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners`)
       .header('Accept', 'application/json')
       .send(JSON.stringify(runner))
       .end(function (res) {
@@ -365,7 +365,7 @@ class Edit extends Component {
         console.log('this.userTimes ' + JSON.stringify(this.userTimes));
         const timeid = this.state.userTimes[raceType].timeid;
         var unirest = require("unirest");
-        unirest.delete(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times?timeid=${timeid}`)
+        unirest.delete(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times?timeid=${timeid}`)
           .header('Accept', 'application/json')
           .end(function (res) {
             if (res.error) {
@@ -401,7 +401,7 @@ class Edit extends Component {
     
           console.log("savinghere: " + JSON.stringify(time));
     
-          unirest.put(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times`)
+          unirest.put(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times`)
             .header('Accept', 'application/json')
             .send(JSON.stringify(time))
             .end(function (res) {
@@ -422,7 +422,7 @@ class Edit extends Component {
     
           console.log("savingthere: " + JSON.stringify(time));
     
-          unirest.post(`https://om4pdyve0f.execute-api.us-west-2.amazonaws.com/prod/times`)
+          unirest.post(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times`)
             .header('Accept', 'application/json')
             .send(JSON.stringify(time))
             .end(function (res) {
