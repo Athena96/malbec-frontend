@@ -1,4 +1,22 @@
 {
+  "prod": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-malbec-prod-35433-authRole",
+      "UnauthRoleArn": "arn:aws:iam::173916683421:role/amplify-malbec-prod-35433-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::173916683421:role/amplify-malbec-prod-35433-authRole",
+      "Region": "us-west-2",
+      "DeploymentBucketName": "amplify-malbec-prod-35433-deployment",
+      "UnauthRoleName": "amplify-malbec-prod-35433-unauthRole",
+      "StackName": "amplify-malbec-prod-35433",
+      "StackId": "arn:aws:cloudformation:us-west-2:173916683421:stack/amplify-malbec-prod-35433/d9f52520-f0e9-11eb-95b3-06cc55e9445d",
+      "AmplifyAppId": "d26krotl6kd0b4"
+    },
+    "categories": {
+      "auth": {
+        "malbec1a919964": {}
+      }
+    }
+  },
   "dev": {
     "awscloudformation": {
       "AuthRoleName": "amplify-malbecfrontend-dev-153654-authRole",
