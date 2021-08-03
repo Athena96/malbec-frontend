@@ -76,7 +76,7 @@ class Profile extends Component {
 
         var unirest = require("unirest");
         console.log("refetch///");
-        unirest.get(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${this.state.runnerid}`)
+        unirest.get(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${this.state.runnerid}`)
           .header('Accept', 'application/json')
           .end(function (res) {
             console.log(res.raw_body);
@@ -97,7 +97,7 @@ class Profile extends Component {
             return
           });
 
-          unirest.get(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${this.state.runnerid}`)
+          unirest.get(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${this.state.runnerid}`)
           .header('Accept', 'application/json')
           .end(function (res) {
   

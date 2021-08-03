@@ -70,7 +70,7 @@ class Home extends Component {
 
       // 3. get their profile
       var unirest = require("unirest");
-      unirest.get(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${signedInRunnerId}`)
+      unirest.get(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${signedInRunnerId}`)
         .header('Accept', 'application/json')
         .end(function (res) {
           const runnerBody = JSON.parse(res.raw_body);
@@ -183,7 +183,7 @@ class Home extends Component {
         });
 
       // 4. get their race times
-      unirest.get(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${signedInRunnerId}`)
+      unirest.get(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${signedInRunnerId}`)
         .header('Accept', 'application/json')
         .end(function (res) {
 
@@ -217,7 +217,7 @@ class Home extends Component {
           return
         });
 
-      unirest.get(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/matches?runnerid=${signedInRunnerId}`)
+      unirest.get(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/matches?runnerid=${signedInRunnerId}`)
         .header('Accept', 'application/json')
         .end(async function (res) {
           const matches = JSON.parse(res.raw_body);
@@ -331,7 +331,7 @@ class Home extends Component {
       });
 
       var unirest = require("unirest");
-      unirest.get(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${matchId}`)
+      unirest.get(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${matchId}`)
         .header('Accept', 'application/json')
         .end(function (res) {
 
@@ -348,7 +348,7 @@ class Home extends Component {
           return
         });
 
-      unirest.get(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${matchId}`)
+      unirest.get(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${matchId}`)
         .header('Accept', 'application/json')
         .end(function (res) {
 
@@ -405,7 +405,7 @@ class Home extends Component {
 
     console.log("SAVE RUNNER: " + JSON.stringify(runner));
     var unirest = require("unirest");
-    unirest.put(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners`)
+    unirest.put(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners`)
       .header('Accept', 'application/json')
       .send(JSON.stringify(runner))
       .end(function (res) {
