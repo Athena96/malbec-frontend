@@ -50,6 +50,9 @@ class Home extends Component {
   }
 
   componentDidMount() {
+
+    console.log("process.env.ENV_VAR: " + process.env.ENV_VAR);
+    console.log("process.env.REACT_APP_ENV_VAR: " + process.env.REACT_APP_ENV_VAR);
     window.addEventListener("resize", this.handleResize);
 
     var currentComponent = this;
