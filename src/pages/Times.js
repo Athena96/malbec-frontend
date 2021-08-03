@@ -72,7 +72,7 @@ class Times extends Component {
         this.getCurrentUserEmail().then((response) => {
             var unirest = require("unirest");
 
-            unirest.get(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${response}`)
+            unirest.get(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners?runnerid=${response}`)
             .header('Accept', 'application/json')
             .end(function (res) {
               console.log(res.raw_body);
@@ -99,7 +99,7 @@ class Times extends Component {
               return
             });
 
-            unirest.get(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${response}`)
+            unirest.get(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times?runnerid=${response}`)
                 .header('Accept', 'application/json')
                 .end(function (res) {
                     const timesBody = JSON.parse(res.raw_body);
@@ -163,7 +163,7 @@ class Times extends Component {
         const timeid = this.state[raceType].timeid;
         let currentComponent = this;
         var unirest = require("unirest");
-        unirest.delete(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times?timeid=${timeid}`)
+        unirest.delete(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times?timeid=${timeid}`)
         .header('Accept', 'application/json')
         .end(function (res) {
           if (res.error) {
@@ -202,7 +202,7 @@ class Times extends Component {
             time['timeid'] = this.state[raceType].timeid;
             console.log('sending: ' + JSON.stringify(time));
 
-            unirest.put(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times`)
+            unirest.put(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times`)
               .header('Accept', 'application/json')
               .send(JSON.stringify(time))
               .end(function (res) {
@@ -221,7 +221,7 @@ class Times extends Component {
         } else {
             time['timeid'] = "" + (new Date()).getTime();
             console.log('sending NEW: ' + JSON.stringify(time));
-            unirest.post(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times`)
+            unirest.post(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/times`)
               .header('Accept', 'application/json')
               .send(JSON.stringify(time))
               .end(function (res) {

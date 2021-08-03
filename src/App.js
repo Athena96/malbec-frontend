@@ -26,7 +26,7 @@ const listener = (data) => {
         console.log('objToSending: ' + JSON.stringify(objToSending));
 
         var unirest = require("unirest");
-        unirest.post(`https://${process.env.API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners`)
+        unirest.post(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners`)
           .header('Accept', 'application/json')
           .send(JSON.stringify(objToSending))
           .end(function (res) {
