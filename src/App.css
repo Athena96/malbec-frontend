@@ -62,7 +62,6 @@ width: 60%;
 .color-nav {
     /* background-color: rgb(0, 199, 56); */
     background-color: rgb(0, 190, 120);
-
 }
 
 #nav-dropdown {
@@ -136,8 +135,8 @@ a:active {
 
 .main {
     /* Same as the width of the sidenav */
-    font-family: "Helvetica Neue"; 
-color: rgb(57, 80, 79);
+    font-family: "Helvetica Neue";
+    color: rgb(57, 80, 79);
     margin: auto;
     padding-top: 25px;
     padding-bottom: 25px;
@@ -146,6 +145,12 @@ color: rgb(57, 80, 79);
 .indent {
     padding-top: 50px;
     padding-bottom: 25px;
+}
+
+.indentsignin {
+    margin-left: 16px;
+    margin-top: 16px;
+    margin-right: 16px;
 }
 
 .profileIndent {
@@ -169,8 +174,8 @@ color: rgb(57, 80, 79);
 
 .mainCenter {
     /* Same as the width of the sidenav */
-    font-family: "Helvetica Neue"; 
-color: rgb(57, 80, 79);
+    font-family: "Helvetica Neue";
+    color: rgb(57, 80, 79);
     text-align: justify;
     padding-left: 16px;
     padding-right: 10px;
@@ -184,8 +189,8 @@ color: rgb(57, 80, 79);
 
 .blogs {
     /* Same as the width of the sidenav */
-    font-family: "Helvetica Neue"; 
-color: rgb(57, 80, 79);
+    font-family: "Helvetica Neue";
+    color: rgb(57, 80, 79);
     padding-left: 52px;
     padding-right: 52px;
     padding-top: 22px;
@@ -193,55 +198,55 @@ color: rgb(57, 80, 79);
 }
 
 .main h1 {
-    font-family: "Helvetica Neue"; 
-color: rgb(57, 80, 79);
+    font-family: "Helvetica Neue";
+    color: rgb(57, 80, 79);
 }
 
 .blogs h1 {
-    font-family: "Helvetica Neue"; 
-color: rgb(57, 80, 79);
+    font-family: "Helvetica Neue";
+    color: rgb(57, 80, 79);
 }
 
 .main h2 {
-    font-family: "Helvetica Neue"; 
-color: rgb(57, 80, 79);
+    font-family: "Helvetica Neue";
+    color: rgb(57, 80, 79);
 }
 
 .blogs h2 {
-    font-family: "Helvetica Neue"; 
-color: rgb(57, 80, 79);
+    font-family: "Helvetica Neue";
+    color: rgb(57, 80, 79);
 }
 
 .main h3 {
-    font-family: "Helvetica Neue"; 
-color: rgb(57, 80, 79);
+    font-family: "Helvetica Neue";
+    color: rgb(57, 80, 79);
 }
 
 .blogs h3 {
-    font-family: "Helvetica Neue"; 
-color: rgb(57, 80, 79);
+    font-family: "Helvetica Neue";
+    color: rgb(57, 80, 79);
 }
 
 .main h4 {
-    font-family: "Helvetica Neue"; 
-color: rgb(57, 80, 79);
+    font-family: "Helvetica Neue";
+    color: rgb(57, 80, 79);
 }
 
 .blogs h4 {
-    font-family: "Helvetica Neue"; 
-color: rgb(57, 80, 79);
+    font-family: "Helvetica Neue";
+    color: rgb(57, 80, 79);
 }
 
 .main p {
     font-size: large;
-    font-family: "Helvetica Neue"; 
-color: rgb(57, 80, 79);
+    font-family: "Helvetica Neue";
+    color: rgb(57, 80, 79);
 }
 
 .blogs p {
     font-size: large;
-    font-family: "Helvetica Neue"; 
-color: rgb(57, 80, 79);
+    font-family: "Helvetica Neue";
+    color: rgb(57, 80, 79);
 }
 
 .favorites_li {
@@ -373,5 +378,40 @@ height: 100px; */
 }
 
 .subscribe {
+    width: 100%;
+}
+
+.signIn {
+    /* background-color:rgb(235, 235, 235); */
+    margin-left: 16px;
+    margin-top: 16px;
+    margin-right: 16px;
+}
+
+.create {
+    background-color: rgb(255, 255, 255);
+    border: none;
+    color: rgb(0, 135, 177);
+    padding: 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 8px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.login {
+    background-color: rgb(255, 255, 255);
+    border: none;
+    color: rgb(255, 124, 123);
+    padding: 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 8px;
+    margin-top: 10px;
+    margin-bottom: 10px;
     width: 100%;
 }
