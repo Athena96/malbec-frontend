@@ -223,31 +223,34 @@ class Home extends Component {
           const matches = JSON.parse(res.raw_body);
           console.log('mmatches' + JSON.stringify(matches))
 
-          for (const raceType of Object.keys(matches)) {
-            if (RACE_MAP[raceType] && matches[raceType] && matches[raceType].length > 0) {
-              for (const matchObj of matches[raceType]) {
-                console.log('matchObj' + JSON.stringify(matchObj))
-
-                const listPic = await Storage.list(`${matchObj.runnerid}/`);
-
-                console.log('listPic' + JSON.stringify(listPic))
-                let signedURL = null;
-                if (listPic && listPic.length > 0) {
-                  signedURL = await Storage.get(listPic[0].key);
-                }
-
-                //
-                let id = 0;
-                for (const m of matches[raceType]) {
-                  if (m.runnerid === matchObj.runnerid) {
-                    matches[raceType][id]['profileImageUrl'] = signedURL;
+          if (matches) {
+            for (const raceType of Object.keys(matches)) {
+              if (RACE_MAP[raceType] && matches[raceType] && matches[raceType].length > 0) {
+                for (const matchObj of matches[raceType]) {
+                  console.log('matchObj' + JSON.stringify(matchObj))
+  
+                  const listPic = await Storage.list(`${matchObj.runnerid}/`);
+  
+                  console.log('listPic' + JSON.stringify(listPic))
+                  let signedURL = null;
+                  if (listPic && listPic.length > 0) {
+                    signedURL = await Storage.get(listPic[0].key);
                   }
-                  id += 1;
+  
+                  //
+                  let id = 0;
+                  for (const m of matches[raceType]) {
+                    if (m.runnerid === matchObj.runnerid) {
+                      matches[raceType][id]['profileImageUrl'] = signedURL;
+                    }
+                    id += 1;
+                  }
+                  //
                 }
-                //
               }
             }
           }
+
           console.log("matches: " + JSON.stringify(matches));
           currentComponent.setState({
             matches: matches,
