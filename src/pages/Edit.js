@@ -520,7 +520,7 @@ class Edit extends Component {
                             
                             className="rounded"
                             name="message"
-                            label="message"
+                            label="Message"
                             type="text"
                             rows={3}
 
@@ -531,9 +531,8 @@ class Edit extends Component {
                     <label>
                         <b>Name</b><br />
                         <Textfield
-                 
                             name="firstname"
-                            label="firstname"
+                            label="Name"
                             value={this.state.signedInRunner.firstname}
                             onChange={this.handleChange} />
                     </label>
@@ -592,7 +591,8 @@ class Edit extends Component {
                             value={this.state.signedInRunner.email}
                             onChange={this.handleChange} />
                     </label>
-
+                    <Button style={{ backgroundColor: 'rgb(0, 190, 120)' }} onClick={this.save}>Save Profile</Button>
+                    <br />
                     <b>5k Time</b>
                     {this.renderRaceTime('fivek')}<br />
                     
@@ -605,8 +605,6 @@ class Edit extends Component {
 
                     <b> Marathon Time</b>
                     {this.renderRaceTime('marathon')}<br />
-
-                    <Button style={{ backgroundColor: 'rgb(0, 190, 120)' }} onClick={this.save}>Save Profile</Button>
 
                 </Card>
             )
