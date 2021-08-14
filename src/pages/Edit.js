@@ -94,15 +94,13 @@ class Edit extends Component {
                         signedInRunnerProfilePic: signedURL,
                         profilePicLoading: false
                     });
-                }).catch(err => {
-                    
+                }).catch(err => { 
+                    console.log(err);
+
                     currentComponent.setState({
                         signedInRunnerProfilePic: null,
                         profilePicLoading: false
                     });
-
-                    console.log(err)
-
                 });
 
             // 3. get their profile
@@ -505,7 +503,8 @@ class Edit extends Component {
             return (
                 <Card shadow={0} style={cardStyle} >
 
-        {this.state.signedInRunnerProfilePic != null ? 
+
+{this.state.signedInRunnerProfilePic != null ? 
                   <><img src={this.state.signedInRunnerProfilePic} alt="profile" style={{ maxWidth: "300px", borderRadius: '5px' }} border="5" /><br /></>:
                   <><img src={placeholderImage} alt="profile" style={{ maxWidth: "300px", borderRadius: '5px' }} border="5" /></>}
   
@@ -521,7 +520,7 @@ class Edit extends Component {
                             
                             className="rounded"
                             name="message"
-                            label="message"
+                            label="Message"
                             type="text"
                             rows={3}
 
@@ -532,9 +531,8 @@ class Edit extends Component {
                     <label>
                         <b>Name</b><br />
                         <Textfield
-                 
                             name="firstname"
-                            label="firstname"
+                            label="Name"
                             value={this.state.signedInRunner.firstname}
                             onChange={this.handleChange} />
                     </label>
@@ -593,7 +591,8 @@ class Edit extends Component {
                             value={this.state.signedInRunner.email}
                             onChange={this.handleChange} />
                     </label>
-
+                    <Button style={{ backgroundColor: 'rgb(0, 190, 120)' }} onClick={this.save}>Save Profile</Button>
+                    <br />
                     <b>5k Time</b>
                     {this.renderRaceTime('fivek')}<br />
                     
@@ -606,8 +605,6 @@ class Edit extends Component {
 
                     <b> Marathon Time</b>
                     {this.renderRaceTime('marathon')}<br />
-
-                    <Button style={{ backgroundColor: 'rgb(0, 190, 120)' }} onClick={this.save}>Save Profile</Button>
 
                 </Card>
             )
