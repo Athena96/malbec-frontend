@@ -59,7 +59,7 @@ class Profile extends Component {
   componentDidMount() {
     window.addEventListener("resize", this.handleResize);
     var currentComponent = this;
-console.log("this.state.runnerid " + this.state.runnerid);
+
     Storage.list(`${this.state.runnerid}/`) // for listing ALL files without prefix, pass '' instead
     .then(async result => {
 
