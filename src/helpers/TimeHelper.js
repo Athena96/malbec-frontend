@@ -1,15 +1,7 @@
 
 
 exports.getNiceTime = (durationSeconds) => {
-    function str_pad_left(string,pad,length) {
-        return (new Array(length+1).join(pad)+string).slice(-length);
-    }
-    var minutes = Math.floor(durationSeconds / 60);
-    var seconds = durationSeconds - minutes * 60;
-    var hours = seconds >= 60*60 ? Math.floor(durationSeconds / 3600) : null;
-
-    var finalTime = hours ? str_pad_left(hours,'0',2) + ":" + str_pad_left(minutes,'0',2)+':'+str_pad_left(seconds,'0',2) : str_pad_left(minutes,'0',2)+':'+str_pad_left(seconds,'0',2);
-    return finalTime;
+    return new Date(durationSeconds * 1000).toISOString().substr(11, 8);
 }
 
 
