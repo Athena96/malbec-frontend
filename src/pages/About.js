@@ -55,7 +55,7 @@ class About extends Component {
     render() {
         const { windowWidth } = this.state;
         const isMobile = windowWidth <= 375;
-        if (!isMobile) {
+        // if (!isMobile) {
           return (
             <div className="indent">
       
@@ -77,17 +77,19 @@ class About extends Component {
                     <br/>
                     <br/>
                     
-                    <p>The app is 100% FREE with no advertisements. It was built by a runner for runners!</p>
+                    <p>The app is 100% <b>FREE</b> with <b>no advertisements</b>. It was built <a
+                  href="https://www.jaredfranzone.com/"
+                  rel="noopener noreferrer" target="_blank" style={{ wordWrap: "break-word" }} >by a runner</a>, for runners!</p>
 
              
-                    <br/>
+                    {/* <br/>
                     <hr/>
                     <p>When you create an account, you get a sharable profile link!</p>
 
-
+*/}
 
                     <img src={profile} alt="profile" style={{ border: "2px solid black", width: "95%", borderRadius: "5px", }} border="5" />
-
+ 
 
 
                   </Col>
@@ -96,29 +98,29 @@ class About extends Component {
               </Container>
             </div>
           );
-        } else {
-          return (
-            <div className="indent">
+        // } else {
+        //   return (
+        //     <div className="indent">
       
-              <Container>
-                <Row>
-                  <Col>
-                    <h3><b>Title</b></h3>
+        //       <Container>
+        //         <Row>
+        //           <Col>
+        //             <h3><b>Title</b></h3>
 
-                  </Col>
+        //           </Col>
     
-                </Row>
-                <Row>
-                  <Col>
-                    <h3><b>Other Col</b></h3>
+        //         </Row>
+        //         <Row>
+        //           <Col>
+        //             <h3><b>Other Col</b></h3>
 
-                  </Col>
+        //           </Col>
     
-                </Row>
-              </Container>
-            </div>
-          );
-        }
+        //         </Row>
+        //       </Container>
+        //     </div>
+        //   );
+        // }
     }
 }
 
