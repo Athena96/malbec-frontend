@@ -163,110 +163,117 @@ const AuthStateApp = () => {
   console.log("window.location.href: " + window.location.href);
   console.log("isAbout: " + isAbout);
   const isProfle = window.location.href && window.location.href.includes('profile');
-  
+
   console.log("window.location.href: " + window.location.href);
   console.log("isProfle: " + isProfle);
 
   if (authState === AuthState.SignedIn && user && !isAbout) {
     return (
-    <div className="main">
+      <div className="main">
 
-      <Navbar className="color-nav" variant="dark" fixed="top" collapseOnSelect expand="lg">
-        <Navbar.Brand href="/home">Pack Finder</Navbar.Brand>
-        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Navbar.Collapse id="responsive-navbar-nav">
+        <Navbar className="color-nav" variant="dark" fixed="top" collapseOnSelect expand="lg">
+          <Navbar.Brand href="/home">Pack Finder</Navbar.Brand>
+          <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+          <Navbar.Collapse id="responsive-navbar-nav">
 
-          <Nav className="mr-auto">
-            <Nav.Link href="/edit">Edit Profile</Nav.Link>
-            <Nav.Link href="/about">About</Nav.Link>
+            <Nav className="mr-auto">
+              <Nav.Link href="/edit">Edit Profile</Nav.Link>
+              <Nav.Link href="/about">About</Nav.Link>
 
-            <Nav.Link onClick={signOut}><b>Sign Out</b></Nav.Link>
+              <Nav.Link onClick={signOut}><b>Sign Out</b></Nav.Link>
 
-          </Nav>
-        </Navbar.Collapse>
+            </Nav>
+          </Navbar.Collapse>
 
-      </Navbar>
+        </Navbar>
 
-      <div >
+        <div >
 
-        <Main />
+          <Main />
+        </div>
+
+
       </div>
-
-
-    </div>
-  )
+    )
   } else if (isAbout) {
-      return (
-        <div className="main">
+    return (
+      <div className="main">
 
         <About />
-        </div>
-      )
-    } else {
-      return (
-        <div className="main">
-          <Container>
-            <Row>
-              <Col>
-                <AmplifyAuthenticator style={{
-                  '--amplify-font-family':
-                    'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
-                  '--amplify-primary-color': '#00be78',
-                  '--amplify-primary-tint': '#A0AEC0',
-                  '--amplify-background-color': '#b9dfd0',
-                  '--border-radius': '20px',
-    
-    
-                }} >
-    
-    <AmplifySignUp
-            slot="sign-up"
-            usernameAlias="email"
-            formFields={[
-              {
-                type: "email",
-                label: "Email",
-                placeholder: "email",
-                inputProps: { required: true, autocomplete: "username" },
-              },
-              {
-                type: "password",
-                label: "Password",
-                placeholder: "**************",
-                inputProps: { required: true, autocomplete: "new-password" },
-              },
-              {
-                type: "phone_number",
-                label: "Custom Phone Label",
-                placeholder: "phone number",
-              },
-            ]} 
-          />
-          <AmplifySignIn slot="sign-in" usernameAlias="email" />
-    </AmplifyAuthenticator>
-              </Col>
-    
-              <Col>
-    
-                <About />
-              </Col>
-    
-            </Row>
-    
-          </Container>
-    
-        </div>
-      );
-    }
-    
-    // else if (!isAbout && isProfle) {
-    //   return (
-    //     <div className="main">
+      </div>
+    )
+  } else {
+    return (
+      <div className="main">
+              
+              {window.innerWidth <= 375 ? <><h2  style={{textAlign: 'center'}}><b>Pack Finder</b></h2>
+              <h4  style={{padding: '15px'}}>Don't be a lone wolf, find your pack!  
+               <a href="https://www.packfinder.run/about"
+                  rel="noopener noreferrer" target="_blank" style={{ wordWrap: "break-word" }} > <u>learn more</u></a> </h4></> : <></>}
+              
+        <Container>
+          <Row>
+            <Col>
 
-    //     <Profile />
-    //     </div>
-    //   );
-    // }
+       
+              <AmplifyAuthenticator style={{
+                '--margin-bottom': '240px',
+
+
+                '--amplify-font-family':
+                  'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+                '--amplify-primary-color': '#00be78',
+                '--amplify-primary-tint': '#A0AEC0',
+                '--amplify-background-color': '#b9dfd0',
+                '--border-radius': '20px',
+
+
+
+              }} >
+
+                <AmplifySignUp
+                  slot="sign-up"
+                  usernameAlias="email"
+                  formFields={[
+                    {
+                      type: "email",
+                      label: "Email",
+                      placeholder: "email",
+                      inputProps: { required: true, autocomplete: "username" },
+                    },
+                    {
+                      type: "password",
+                      label: "Password",
+                      placeholder: "**************",
+                      inputProps: { required: true, autocomplete: "new-password" },
+                    }
+                  ]}
+                />
+                <AmplifySignIn slot="sign-in" usernameAlias="email" />
+              </AmplifyAuthenticator>
+
+            </Col>
+
+            <Col>
+              <About />
+            </Col>
+
+          </Row>
+
+        </Container>
+
+      </div>
+    );
+  }
+
+  // else if (!isAbout && isProfle) {
+  //   return (
+  //     <div className="main">
+
+  //     <Profile />
+  //     </div>
+  //   );
+  // }
 }
 
 export default AuthStateApp;
