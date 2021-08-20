@@ -310,7 +310,7 @@ class Edit extends Component {
             }).catch(err => console.log(err));
     
           await Storage.put(this.state.signedInRunner.runnerid + '/' + file.name, file, {
-            contentType: 'image/png' // contentType is optional
+            contentType: 'image/png' 
           });
     
           const signedurl = await Storage.get(this.state.runnerid + '/' + file.name);
@@ -515,12 +515,12 @@ class Edit extends Component {
                     /><br />
 
                     <label>
-                        <b>Message</b><br />
+                        <b>Message (<i>optional</i>)</b><br />
                         <Textfield
                             
                             className="rounded"
                             name="message"
-                            label="Message"
+                            label='e.g. "Looking for a 5k training buddy!"'
                             type="text"
                             rows={3}
 
@@ -537,7 +537,7 @@ class Edit extends Component {
                             onChange={this.handleChange} />
                     </label>
                     <label>
-                        <b>Location</b><br />
+                        <b>Location <i>(optional)</i></b><br />
                         <Textfield
                             className="rounded"
                             name="location"
@@ -550,7 +550,7 @@ class Edit extends Component {
 
 
                     <label>
-                        <b>Birthday</b><br />
+                        <b>Birthday (<i>optional</i>)</b><br />
                         <input
                             className="rounded"
                             name="birthday"
@@ -559,17 +559,19 @@ class Edit extends Component {
                             onChange={this.handleChange} />
                     </label><br />
 
-                    <b>Gender</b>
+                    <b>Gender (<i>optional</i>)</b>
 
                     <RadioGroup name="gender" value={this.state.signedInRunner.gender} onChange={this.handleChange}>
                         <Radio  name='gender' value={1} ripple >Woman</Radio><> </>
-                        <Radio name='gender' value={2} >Man</Radio>
+                        <Radio name='gender' value={2} >Man</Radio><> </>
+                        <Radio name='gender' value={3} >Other</Radio><> </>
+
                     </RadioGroup><br />
 
-                    <b> Contact Info</b>
+                    <b> Contact Info (<i>optional</i>)</b>
 
                     <label>
-                        Phone Number
+                        Phone Number 
                         <Textfield
                             className="rounded"
                             name="phone"
@@ -593,6 +595,11 @@ class Edit extends Component {
                     </label>
                     <Button style={{ backgroundColor: 'rgb(0, 190, 120)' }} onClick={this.save}>Save Profile</Button>
                     <br />
+                    <hr />
+
+                    <b>Add your most recent race times here to start getting matches!</b>
+                    <br />
+
                     <b>5k Time</b>
                     {this.renderRaceTime('fivek')}<br />
                     
