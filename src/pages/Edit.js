@@ -446,10 +446,12 @@ class Edit extends Component {
                 <div style={cardStyle}>
                 {/* <Card id={race} key={race} shadow={0} style={cardStyle}> */}
                     <label>
-                        <b>Time</b><br />
+                        <b>Time (** 00:00:00 format)</b><br />
                         <input
                             className="rounded"
                             name={`${race}-time`}
+                            placeholder="00:00:00"
+
                             type="text"
                             value={this.state.userTimes[race].time}
                             onChange={this.handleChange} />
