@@ -160,12 +160,7 @@ const AuthStateApp = () => {
   }, []);
 
   const isAbout = window.location.href && window.location.href.includes('about');
-  console.log("window.location.href: " + window.location.href);
-  console.log("isAbout: " + isAbout);
   const isProfle = window.location.href && window.location.href.includes('profile');
-
-  console.log("window.location.href: " + window.location.href);
-  console.log("isProfle: " + isProfle);
 
   if (authState === AuthState.SignedIn && user && !isAbout) {
     return (
