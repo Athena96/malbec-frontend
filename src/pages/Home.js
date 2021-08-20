@@ -96,8 +96,6 @@ class Home extends Component {
                       const cityStateString = `${locationResponse.city}, ${locationResponse.principalSubdivision}`;
                       runnerBody['location'] = cityStateString;
 
-                      console.log('updating runner with coords');
-                      console.log(JSON.stringify(runnerBody));
                       currentComponent.setState({
                         signedInRunner: runnerBody
                       }, () => {
@@ -125,8 +123,6 @@ class Home extends Component {
                           const cityStateString = `${locationResponse.city}, ${locationResponse.principalSubdivision}`;
                           runnerBody['location'] = cityStateString;
 
-                          console.log('updating runner with coords');
-                          console.log(JSON.stringify(runnerBody));
                           currentComponent.setState({
                             signedInRunner: runnerBody
                           }, () => {
@@ -160,8 +156,6 @@ class Home extends Component {
                       const cityStateString = `${locationResponse.city}, ${locationResponse.principalSubdivision}`;
                       runnerBody['location'] = cityStateString;
 
-                      console.log('updating runner with coords');
-                      console.log(JSON.stringify(runnerBody));
                       currentComponent.setState({
                         signedInRunner: runnerBody
                       }, () => {
@@ -221,17 +215,14 @@ class Home extends Component {
         .header('Accept', 'application/json')
         .end(async function (res) {
           const matches = JSON.parse(res.raw_body);
-          console.log('mmatches' + JSON.stringify(matches))
 
           if (matches) {
             for (const raceType of Object.keys(matches)) {
               if (RACE_MAP[raceType] && matches[raceType] && matches[raceType].length > 0) {
                 for (const matchObj of matches[raceType]) {
-                  console.log('matchObj' + JSON.stringify(matchObj))
   
                   const listPic = await Storage.list(`${matchObj.runnerid}/`);
   
-                  console.log('listPic' + JSON.stringify(listPic))
                   let signedURL = null;
                   if (listPic && listPic.length > 0) {
                     signedURL = await Storage.get(listPic[0].key);
@@ -251,7 +242,6 @@ class Home extends Component {
             }
           }
 
-          console.log("matches: " + JSON.stringify(matches));
           currentComponent.setState({
             matches: matches,
             matchesLoading: false
@@ -373,7 +363,6 @@ class Home extends Component {
               raceTimesObj[race] = {}
             }
           }
-          console.log("raceTimesObj: " + JSON.stringify(raceTimesObj));
           currentComponent.setState({
             selectedmatchTimes: raceTimesObj,
             selectedmatchTimesLoading: false,
@@ -392,7 +381,7 @@ class Home extends Component {
   }
 
   save(showAlert) {
-    console.log("save");
+
 
     const runner = {
       "location": this.state.signedInRunner.location,
@@ -406,7 +395,6 @@ class Home extends Component {
       "message": this.state.signedInRunner.message
     }
 
-    console.log("SAVE RUNNER: " + JSON.stringify(runner));
     var unirest = require("unirest");
     unirest.put(`https://${process.env.REACT_APP_API_KEY}.execute-api.us-west-2.amazonaws.com/prod/runners`)
       .header('Accept', 'application/json')
@@ -426,27 +414,29 @@ class Home extends Component {
   }
 
   openDetail(match) {
-    console.log(JSON.stringify(match));
     this.props.history.push('/profile/' + match.runnerid);
   }
 
   renderMatchesForRace(race, isMobile) {
-    console.log('isMobile: ' + isMobile);
     const content = { borderRadius: '40px',  height: '85px', width: '85px', display: 'block', marginLeft:'auto', marginRight: 'auto'};
-    if (this.state.matchesLoading === false) {
+    if (this.state.matchesLoading === false && this.state.signedInRunnerProfileLoading === false) {
 
       if (this.state.matches && this.state.matches[race] && this.state.matches[race].length > 0) {
         let matchesForRace = [];
         let i = 0;
         for (const match of this.state.matches[race]) {
+          const myLat = this.state.signedInRunner['coordinates'].split('#')[0];
+          const myLon = this.state.signedInRunner['coordinates'].split('#')[1];
 
+          const dst = getDistanceFromLatLonInKm(match['coordinates'].split('#')[0], match['coordinates'].split('#')[1], myLat, myLon);
+          const isLocal = dst <= 10;
           if (isMobile) {
             matchesForRace.push(
               <div key={match.runnerid + i} onClick={(e) => this.openDetail(match)}>
                 <ListItem className="cardclasshover" threeLine>
   
                   <ListItemContent style={{maxWidth: '50%', wordWrap: 'break-word'}} subtitle={<><b>Race Time</b><br /> {getNiceTime(match.time)} - ({RACE_MAP[match.race]})</>}>
-                    {match.runnerid.split('@')[0]}              
+                  {match.runnerid} - {isLocal ? <b>(Local match)</b> : <b>(Out of town)</b>}             
                   </ListItemContent>
                   
 
@@ -466,7 +456,7 @@ class Home extends Component {
                 <ListItem className="cardclasshover" threeLine>
   
                   <ListItemContent subtitle={<><b>Race Time</b><br /> {getNiceTime(match.time)} - ({RACE_MAP[match.race]})</>}>
-                    {match.runnerid}              
+                  {match.runnerid} - {isLocal ? <b>(Local match)</b> : <b>(Out of town)</b>}             
                   </ListItemContent>
                   {match.profileImageUrl != null ? 
                   <><img src={match.profileImageUrl} alt="profile" style={content} border="5" /></>:
