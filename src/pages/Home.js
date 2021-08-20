@@ -425,11 +425,16 @@ class Home extends Component {
         let matchesForRace = [];
         let i = 0;
         for (const match of this.state.matches[race]) {
-          const myLat = this.state.signedInRunner['coordinates'].split('#')[0];
-          const myLon = this.state.signedInRunner['coordinates'].split('#')[1];
 
-          const dst = getDistanceFromLatLonInKm(match['coordinates'].split('#')[0], match['coordinates'].split('#')[1], myLat, myLon);
-          const isLocal = dst <= 10;
+          let isLocal = false;
+
+          if (Object.keys(match).includes('coordinates') && Object.keys(this.state.signedInRunner).includes('coordinates')) {
+            const myLat = this.state.signedInRunner['coordinates'].split('#')[0];
+            const myLon = this.state.signedInRunner['coordinates'].split('#')[1];
+            const dst = getDistanceFromLatLonInKm(match['coordinates'].split('#')[0], match['coordinates'].split('#')[1], myLat, myLon);
+            isLocal = dst <= 10;
+          }
+          
           if (isMobile) {
             matchesForRace.push(
               <div key={match.runnerid + i} onClick={(e) => this.openDetail(match)}>
